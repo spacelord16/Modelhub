@@ -34,6 +34,18 @@ export default function Navigation() {
               >
                 Deploy
               </Link>
+              <Link
+                href="/api-test"
+                className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+              >
+                API Test
+              </Link>
+              <Link
+                href="/auth-test"
+                className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+              >
+                Auth Test
+              </Link>
             </div>
           </div>
           <div className="hidden sm:ml-6 sm:flex sm:items-center space-x-4">
