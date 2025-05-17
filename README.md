@@ -1,105 +1,73 @@
-# Open Source Deep Learning Model Hub
+# Deep Learning Model Hub
 
-An open-source platform for sharing, testing, and deploying deep learning models. Think of it as a community-driven alternative to Hugging Face Model Hub, focused on open contributions and easy deployment.
+A platform for sharing, discovering, and deploying deep learning models.
 
-## 🌟 Features
+## Project Structure
 
-- **Model Management**
+- `backend/`: FastAPI backend service
+- `frontend/`: Next.js frontend application
+- `docs/`: Documentation
+- `infrastructure/`: Deployment configurations
 
-  - Upload and share deep learning models
-  - Model cards with detailed documentation
-  - Version control and history tracking
+## Quick Start
 
-- **Model Testing & Inference**
-
-  - Interactive web UI for model testing
-  - REST API endpoints for model deployment
-  - Asynchronous job processing for heavy models
-
-- **Discovery & Community**
-
-  - Advanced search and filtering
-  - Ratings and reviews system
-  - Performance leaderboards
-
-- **Deployment & Automation**
-  - AWS integration for scalable deployment
-  - GitHub integration for automatic model updates
-  - Containerized model serving
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Python 3.8+
-- Node.js 16+
-- Docker
-- AWS Account (for deployment)
-
-### Installation
-
-1. Clone the repository:
+### Backend Setup
 
 ```bash
-git clone [your-repo-url]
-cd [repo-name]
-```
-
-2. Set up the backend:
-
-```bash
+# Navigate to backend directory
 cd backend
-python -m venv venv
-source venv/bin/activate  # On Windows: .\venv\Scripts\activate
-pip install -r requirements.txt
+
+# Run setup script (creates SQLite DB, default admin, etc.)
+chmod +x setup.sh
+./setup.sh
+
+# Start backend server
+python -m uvicorn app.main:app --reload
 ```
 
-3. Set up the frontend:
+The backend API will be available at http://localhost:8000 with API docs at http://localhost:8000/api/v1/docs.
+
+Default admin credentials: `admin@example.com` / `admin`
+
+### Frontend Setup
 
 ```bash
+# Navigate to frontend directory
 cd frontend
+
+# Install dependencies
 npm install
-```
 
-4. Set up environment variables:
-
-```bash
-cp .env.example .env
-# Edit .env with your configuration
-```
-
-### Development
-
-1. Start the backend server:
-
-```bash
-cd backend
-uvicorn main:app --reload
-```
-
-2. Start the frontend development server:
-
-```bash
-cd frontend
+# Run development server
 npm run dev
 ```
 
-## 📚 Documentation
+The frontend will be available at http://localhost:3001
 
-- [API Documentation](docs/api.md)
-- [Deployment Guide](docs/deployment.md)
-- [Contributing Guidelines](docs/contributing.md)
+## Features
 
-## 🤝 Contributing
+- User authentication and authorization
+- Model uploading and downloading
+- Model discovery and filtering
+- Performance metrics tracking
+- Dark mode support
 
-We welcome contributions! Please see our [Contributing Guidelines](docs/contributing.md) for details.
+## Technology Stack
 
-## 📝 License
+### Backend
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+- FastAPI
+- SQLAlchemy (PostgreSQL or SQLite)
+- JWT Authentication
+- Pydantic
 
-## 🙏 Acknowledgments
+### Frontend
 
-- Inspired by Hugging Face Model Hub
-- Built with FastAPI and Next.js
-- Powered by AWS infrastructure
+- Next.js
+- TypeScript
+- Tailwind CSS
+- Axios
+
+## License
+
+MIT

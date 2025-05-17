@@ -3,6 +3,7 @@ import shutil
 from fastapi import UploadFile
 from typing import Tuple
 import uuid
+import aiofiles
 
 from app.core.config import settings
 
@@ -10,9 +11,9 @@ from app.core.config import settings
 # In production, you would use S3 or similar cloud storage
 
 
-def save_uploaded_file(file: UploadFile, user_id: int) -> Tuple[str, float]:
+async def save_uploaded_file(file: UploadFile, user_id: int) -> Tuple[str, float]:
     """
-    Save an uploaded file to local storage (mock S3)
+    Asynchronously save an uploaded file to local storage (mock S3)
 
     Returns:
         Tuple[str, float]: (file path, size in MB)
@@ -28,9 +29,15 @@ def save_uploaded_file(file: UploadFile, user_id: int) -> Tuple[str, float]:
     # Save file path
     file_path = os.path.join(storage_dir, unique_filename)
 
-    # Save the file
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    # Save the file asynchronously
+    async with aiofiles.open(file_path, "wb") as buffer:
+        # Read and write in chunks to avoid loading entire file into memory
+        chunk_size = 1024 * 1024  # 1MB chunks
+        while True:
+            chunk = await file.read(chunk_size)
+            if not chunk:
+                break
+            await buffer.write(chunk)
 
     # Get file size in MB
     size_mb = os.path.getsize(file_path) / (1024 * 1024)

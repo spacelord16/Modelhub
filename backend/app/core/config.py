@@ -1,4 +1,4 @@
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 from typing import Optional, List
 import os
 from dotenv import load_dotenv
@@ -19,9 +19,11 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: List[str] = [
         "http://localhost:3000",  # React frontend
         "http://localhost:8000",  # Backend
+        "http://localhost:3001",  # Next.js frontend alternate port
     ]
 
     # Database
+    USE_SQLITE: bool = os.getenv("USE_SQLITE", "False").lower() == "true"
     POSTGRES_SERVER: str = os.getenv("POSTGRES_SERVER", "localhost")
     POSTGRES_USER: str = os.getenv("POSTGRES_USER", "postgres")
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "postgres")
@@ -33,6 +35,9 @@ class Settings(BaseSettings):
     AWS_SECRET_ACCESS_KEY: Optional[str] = os.getenv("AWS_SECRET_ACCESS_KEY")
     AWS_REGION: str = os.getenv("AWS_REGION", "us-east-1")
     S3_BUCKET: str = os.getenv("S3_BUCKET", "modelhub-models")
+
+    # File Storage
+    UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", "uploads")
 
     # Model Settings
     SUPPORTED_MODEL_FORMATS: List[str] = [

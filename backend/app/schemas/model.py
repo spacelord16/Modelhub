@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
+
 class ModelBase(BaseModel):
     name: str
     description: str
@@ -13,17 +14,20 @@ class ModelBase(BaseModel):
     license: str
     paper_url: Optional[str] = None
     github_url: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    model_metadata: Optional[Dict[str, Any]] = None
+
 
 class ModelCreate(ModelBase):
     pass
+
 
 class ModelUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     version: Optional[str] = None
     tags: Optional[List[str]] = None
-    metadata: Optional[Dict[str, Any]] = None
+    model_metadata: Optional[Dict[str, Any]] = None
+
 
 class ModelInDBBase(ModelBase):
     id: int
@@ -40,8 +44,10 @@ class ModelInDBBase(ModelBase):
     class Config:
         from_attributes = True
 
+
 class Model(ModelInDBBase):
     pass
 
+
 class ModelInDB(ModelInDBBase):
-    pass 
+    pass

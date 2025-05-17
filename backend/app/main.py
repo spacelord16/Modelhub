@@ -1,10 +1,13 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from fastapi.exceptions import RequestValidationError
+from fastapi.staticfiles import StaticFiles
+import os
 
 from app.core.config import settings
 from app.api.v1.api import api_router
+from app.api.deps import get_current_active_user
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -38,6 +41,25 @@ async def validation_exception_handler(request, exc):
 
 # Include API router
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+
+# Setup upload directory
+os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+
+
+# Download endpoint
+@app.get(f"{settings.API_V1_STR}/downloads/models/{{user_id}}/{{filename}}")
+async def download_file(
+    user_id: str, filename: str, current_user=Depends(get_current_active_user)
+):
+    file_path = os.path.join(settings.UPLOAD_DIR, user_id, filename)
+
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+
+    return FileResponse(
+        file_path, media_type="application/octet-stream", filename=filename
+    )
 
 
 # Health check endpoint

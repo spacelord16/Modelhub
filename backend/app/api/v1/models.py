@@ -1,4 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    UploadFile,
+    File,
+    Form,
+    Query,
+    Body,
+)
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 import json
@@ -15,6 +24,7 @@ from app.services.model import (
 )
 from app.models.user import User
 from app.schemas.model import Model, ModelCreate, ModelUpdate
+from app.utils.storage import save_uploaded_file, get_download_url
 
 router = APIRouter()
 
@@ -36,17 +46,47 @@ def read_models(
 
 
 @router.post("/", response_model=Model)
-def create_model_endpoint(
+async def create_model_endpoint(
     *,
     db: Session = Depends(get_db),
-    model_in: ModelCreate,
     current_user: User = Depends(get_current_active_user),
-    s3_path: str = Form(...),
-    size_mb: float = Form(...)
+    name: str = Form(...),
+    description: str = Form(...),
+    framework: str = Form(...),
+    version: str = Form(...),
+    format: str = Form(...),
+    task_type: str = Form(...),
+    tags: str = Form(...),  # JSON string of tags
+    license: str = Form(...),
+    paper_url: Optional[str] = Form(None),
+    github_url: Optional[str] = Form(None),
+    metadata: Optional[str] = Form(None),  # JSON string of metadata
+    model_file: UploadFile = File(...)
 ):
-    """Create a new model"""
-    # In a real implementation, you'd handle file upload to S3 here
-    # and get back the s3_path and size_mb from that operation
+    """Create a new model with file upload"""
+    # Convert JSON strings to Python objects
+    tags_list = json.loads(tags)
+    metadata_dict = json.loads(metadata) if metadata else None
+
+    # Create model schema
+    model_in = ModelCreate(
+        name=name,
+        description=description,
+        framework=framework,
+        version=version,
+        format=format,
+        task_type=task_type,
+        tags=tags_list,
+        license=license,
+        paper_url=paper_url,
+        github_url=github_url,
+        model_metadata=metadata_dict,
+    )
+
+    # Save the uploaded file
+    s3_path, size_mb = await save_uploaded_file(model_file, current_user.id)
+
+    # Create the model
     return create_model(
         db=db,
         model_in=model_in,
@@ -107,7 +147,7 @@ def delete_model_endpoint(
     return delete_model(db=db, model_id=model_id)
 
 
-@router.post("/{model_id}/download", response_model=Model)
+@router.post("/{model_id}/download", response_model=Dict[str, Any])
 def download_model(
     model_id: int,
     db: Session = Depends(get_db),
@@ -121,16 +161,17 @@ def download_model(
     # Increment download counter
     updated_model = increment_downloads(db=db, model_id=model_id)
 
-    # In a real implementation, you'd generate a pre-signed URL for S3 download
-    # For now, we just return the model with incremented download count
-    return updated_model
+    # Generate download URL
+    download_url = get_download_url(db_model.s3_path)
+
+    return {"model": updated_model, "download_url": download_url}
 
 
 @router.post("/{model_id}/metrics", response_model=Model)
 def update_model_performance(
     *,
     model_id: int,
-    metrics: Dict[str, Any],
+    metrics: Dict[str, Any] = Body(...),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
