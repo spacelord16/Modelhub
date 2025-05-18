@@ -19,7 +19,7 @@ export default function LoginPage() {
 
     try {
       const response = await apiClient.login(email, password);
-      localStorage.setItem("token", response.token);
+      // The token is already stored in localStorage by the api client
       router.push("/models");
     } catch (err) {
       setError("Invalid email or password");

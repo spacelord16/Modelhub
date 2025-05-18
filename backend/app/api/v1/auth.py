@@ -42,6 +42,17 @@ def login_access_token(
     }
 
 
+@router.post("/token", response_model=Token)
+def login_access_token_alias(
+    db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()
+) -> Any:
+    """
+    Get access token for future requests (alias endpoint for frontend compatibility).
+    Same as /login but with a different URL to match frontend expectations.
+    """
+    return login_access_token(db=db, form_data=form_data)
+
+
 @router.post("/register", response_model=UserSchema)
 def register_user(
     *,

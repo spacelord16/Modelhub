@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     ]
 
     # Database
-    USE_SQLITE: bool = os.getenv("USE_SQLITE", "False").lower() == "true"
+    USE_SQLITE: bool = True  # Default to SQLite - more reliable for quick setup
     POSTGRES_SERVER: str = os.getenv("POSTGRES_SERVER", "localhost")
     POSTGRES_USER: str = os.getenv("POSTGRES_USER", "postgres")
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "postgres")
