@@ -8,6 +8,10 @@ from app.core.database import SessionLocal, engine
 from app.models.user import User, Base
 from passlib.context import CryptContext
 import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Initialize password hasher
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -15,13 +19,16 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def reset_admin_user():
     """Create or reset the admin user"""
+    print("Connecting to database...")
     db = SessionLocal()
     try:
+        print("Looking for admin user...")
         # Check if admin exists
         admin = db.query(User).filter(User.email == "admin@example.com").first()
 
         # If admin exists, reset the password
         if admin:
+            print(f"Found existing admin user: {admin.email}")
             admin.hashed_password = pwd_context.hash("admin")
             admin.is_superuser = True
             # Ensure username is set
@@ -30,6 +37,7 @@ def reset_admin_user():
             db.commit()
             print("Admin user reset: admin@example.com / admin / admin")
         else:
+            print("No admin user found. Creating new admin...")
             # Create admin user with all required fields
             admin = User(
                 email="admin@example.com",
@@ -49,6 +57,13 @@ def reset_admin_user():
 
 
 if __name__ == "__main__":
-    # Create tables if they don't exist
-    Base.metadata.create_all(bind=engine)
-    reset_admin_user()
+    # Ensure database tables exist
+    try:
+        print("Creating tables if they don't exist...")
+        Base.metadata.create_all(bind=engine)
+        reset_admin_user()
+    except Exception as e:
+        print(f"Error: {e}")
+        print(
+            "\nTIP: Make sure your .env file has USE_SQLITE=true or your PostgreSQL database is running."
+        )
