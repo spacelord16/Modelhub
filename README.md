@@ -9,48 +9,51 @@ A platform for sharing, discovering, and deploying deep learning models.
 - `docs/`: Documentation
 - `infrastructure/`: Deployment configurations
 
-## Quick Start
+## User Capabilities
 
-### Backend Setup
+### Model Discovery & Browsing
 
-```bash
-# Navigate to backend directory
-cd backend
+- Browse the collection of deep learning models
+- View model details including framework, version, size, and metrics
+- Filter models by task type, framework, and other properties
+- See download counts, ratings, and other community metrics
 
-# Run setup script (creates SQLite DB, default admin, etc.)
-chmod +x setup.sh
-./setup.sh
+### User Authentication
 
-# Start backend server
-python -m uvicorn app.main:app --reload
-```
+- Create a new account with email, username, and password
+- Log in to access authenticated features
+- Manage user profile and credentials
 
-The backend API will be available at http://localhost:8000 with API docs at http://localhost:8000/api/v1/docs.
+### Model Management
 
-Default admin credentials: `admin@example.com` / `admin`
+- Upload new models with metadata (name, description, version)
+- Provide framework details, format specifications, and documentation links
+- Tag models and specify license information
+- View, edit or delete your uploaded models
 
-### Frontend Setup
+### Model Interaction
 
-```bash
-# Navigate to frontend directory
-cd frontend
+- Download models for local use
+- View comprehensive model details and performance metrics
+- Rate models and provide feedback (if implemented)
+- Track usage statistics
 
-# Install dependencies
-npm install
+### Deployment (Planned)
 
-# Run development server
-npm run dev
-```
+- Deploy models to various environments
+- Configure deployment parameters
+- Monitor deployed model performance
 
-The frontend will be available at http://localhost:3001
+### Developer Access
 
-## Features
+- Access the API directly for programmatic interaction
+- API documentation available through FastAPI's Swagger UI
 
-- User authentication and authorization
-- Model uploading and downloading
-- Model discovery and filtering
-- Performance metrics tracking
-- Dark mode support
+## Special Features
+
+- **Theme Toggle**: Switch between light and dark modes
+- **Performance Metrics**: Track and visualize model performance
+- **Responsive Design**: Works on desktop and mobile devices
 
 ## Technology Stack
 
