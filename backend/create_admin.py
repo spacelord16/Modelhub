@@ -45,7 +45,7 @@ if admin:
     cursor.execute(
         """
     UPDATE users 
-    SET username = 'admin', hashed_password = ?, is_superuser = 1
+    SET username = 'admin', hashed_password = ?, is_superuser = 1, is_active = 1
     WHERE email = 'admin@example.com'
     """,
         (hashed_password,),
@@ -57,10 +57,10 @@ else:
     hashed_password = pwd_context.hash("admin")
     cursor.execute(
         """
-    INSERT INTO users (email, username, full_name, hashed_password, is_superuser)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO users (email, username, full_name, hashed_password, is_superuser, is_active)
+    VALUES (?, ?, ?, ?, ?, ?)
     """,
-        ("admin@example.com", "admin", "Admin User", hashed_password, 1),
+        ("admin@example.com", "admin", "Admin User", hashed_password, 1, 1),
     )
     conn.commit()
     print("Admin user created: admin@example.com / admin / admin")

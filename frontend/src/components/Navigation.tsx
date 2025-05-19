@@ -46,6 +46,12 @@ export default function Navigation() {
               >
                 Auth Test
               </Link>
+              <Link
+                href="/token-debug"
+                className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+              >
+                Token Debug
+              </Link>
             </div>
           </div>
           <div className="hidden sm:ml-6 sm:flex sm:items-center space-x-4">
