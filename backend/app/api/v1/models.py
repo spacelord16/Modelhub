@@ -16,14 +16,21 @@ from app.api.deps import get_db, get_current_active_user
 from app.services.model import (
     get_model,
     get_models,
-    create_model,
+    create_model_with_version,
+    create_model_version,
     update_model,
     delete_model,
-    increment_downloads,
-    update_model_metrics,
+    get_model_version,
+    update_version_metrics,
 )
 from app.models.user import User
-from app.schemas.model import Model, ModelCreate, ModelUpdate
+from app.schemas.model import (
+    Model,
+    ModelCreate,
+    ModelUpdate,
+    ModelVersion,
+    ModelVersionCreate,
+)
 from app.utils.storage import save_uploaded_file, get_download_url
 
 router = APIRouter()
@@ -60,10 +67,11 @@ async def create_model_endpoint(
     license: str = Form(...),
     paper_url: Optional[str] = Form(None),
     github_url: Optional[str] = Form(None),
+    changelog: str = Form(...),
     metadata: Optional[str] = Form(None),  # JSON string of metadata
-    model_file: UploadFile = File(...)
+    model_file: UploadFile = File(...),
 ):
-    """Create a new model with file upload"""
+    """Create a new model with its first version"""
     # Convert JSON strings to Python objects
     tags_list = json.loads(tags)
     metadata_dict = json.loads(metadata) if metadata else None
@@ -73,27 +81,93 @@ async def create_model_endpoint(
         name=name,
         description=description,
         framework=framework,
-        version=version,
-        format=format,
         task_type=task_type,
         tags=tags_list,
         license=license,
         paper_url=paper_url,
         github_url=github_url,
+    )
+
+    # Create version schema
+    version_in = ModelVersionCreate(
+        version=version,
+        format=format,
+        changelog=changelog,
         model_metadata=metadata_dict,
     )
 
     # Save the uploaded file
     s3_path, size_mb = await save_uploaded_file(model_file, current_user.id)
 
-    # Create the model
-    return create_model(
+    # Create the model with its first version
+    return create_model_with_version(
         db=db,
         model_in=model_in,
+        version_in=version_in,
         owner_id=current_user.id,
         s3_path=s3_path,
         size_mb=size_mb,
     )
+
+
+@router.post("/{model_id}/versions", response_model=ModelVersion)
+async def create_version_endpoint(
+    *,
+    model_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+    version: str = Form(...),
+    format: str = Form(...),
+    changelog: str = Form(...),
+    metadata: Optional[str] = Form(None),
+    model_file: UploadFile = File(...),
+):
+    """Create a new version for an existing model"""
+    # Check model ownership
+    db_model = get_model(db, model_id)
+    if not db_model:
+        raise HTTPException(status_code=404, detail="Model not found")
+    if db_model.owner_id != current_user.id and not current_user.is_superuser:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    # Parse metadata
+    metadata_dict = json.loads(metadata) if metadata else None
+
+    # Create version schema
+    version_in = ModelVersionCreate(
+        version=version,
+        format=format,
+        changelog=changelog,
+        model_metadata=metadata_dict,
+    )
+
+    # Save the uploaded file
+    s3_path, size_mb = await save_uploaded_file(model_file, current_user.id)
+
+    # Create the new version
+    return create_model_version(
+        db=db,
+        model_id=model_id,
+        version_in=version_in,
+        s3_path=s3_path,
+        size_mb=size_mb,
+    )
+
+
+@router.get("/{model_id}/versions/{version}", response_model=ModelVersion)
+def read_model_version(
+    model_id: int,
+    version: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    """Get a specific version of a model"""
+    db_version = get_model_version(db, model_id, version)
+    if not db_version:
+        raise HTTPException(
+            status_code=404, detail=f"Version {version} not found for model {model_id}"
+        )
+    return db_version
 
 
 @router.get("/{model_id}", response_model=Model)
@@ -115,9 +189,9 @@ def update_model_endpoint(
     model_id: int,
     db: Session = Depends(get_db),
     model_in: ModelUpdate,
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user),
 ):
-    """Update a model"""
+    """Update a model's metadata"""
     db_model = get_model(db=db, model_id=model_id)
     if db_model is None:
         raise HTTPException(status_code=404, detail="Model not found")
@@ -129,13 +203,36 @@ def update_model_endpoint(
     return update_model(db=db, model_id=model_id, model_in=model_in)
 
 
+@router.post("/{model_id}/versions/{version}/metrics", response_model=ModelVersion)
+def update_version_performance(
+    *,
+    model_id: int,
+    version: str,
+    metrics: Dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    """Update performance metrics for a specific model version"""
+    db_model = get_model(db=db, model_id=model_id)
+    if db_model is None:
+        raise HTTPException(status_code=404, detail="Model not found")
+
+    # Only allow owner or admin to update metrics
+    if db_model.owner_id != current_user.id and not current_user.is_superuser:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    return update_version_metrics(
+        db=db, model_id=model_id, version=version, performance_metrics=metrics
+    )
+
+
 @router.delete("/{model_id}", response_model=Model)
 def delete_model_endpoint(
     model_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
-    """Delete a model"""
+    """Delete a model and all its versions"""
     db_model = get_model(db=db, model_id=model_id)
     if db_model is None:
         raise HTTPException(status_code=404, detail="Model not found")
@@ -145,46 +242,6 @@ def delete_model_endpoint(
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     return delete_model(db=db, model_id=model_id)
-
-
-@router.post("/{model_id}/download", response_model=Dict[str, Any])
-def download_model(
-    model_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
-):
-    """Record a model download and return download URL"""
-    db_model = get_model(db=db, model_id=model_id)
-    if db_model is None:
-        raise HTTPException(status_code=404, detail="Model not found")
-
-    # Increment download counter
-    updated_model = increment_downloads(db=db, model_id=model_id)
-
-    # Generate download URL
-    download_url = get_download_url(db_model.s3_path)
-
-    return {"model": updated_model, "download_url": download_url}
-
-
-@router.post("/{model_id}/metrics", response_model=Model)
-def update_model_performance(
-    *,
-    model_id: int,
-    metrics: Dict[str, Any] = Body(...),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
-):
-    """Update model performance metrics"""
-    db_model = get_model(db=db, model_id=model_id)
-    if db_model is None:
-        raise HTTPException(status_code=404, detail="Model not found")
-
-    # Only allow owner or admin to update metrics
-    if db_model.owner_id != current_user.id and not current_user.is_superuser:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-
-    return update_model_metrics(db=db, model_id=model_id, performance_metrics=metrics)
 
 
 @router.get("/user/{user_id}", response_model=List[Model])
