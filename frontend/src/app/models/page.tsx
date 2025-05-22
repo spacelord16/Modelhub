@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Model, apiClient } from "../../lib/api";
+import { Model, apiClient } from "@/lib";
 
 export default function ModelsPage() {
   const [models, setModels] = useState<Model[]>([]);

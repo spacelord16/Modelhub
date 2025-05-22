@@ -3,7 +3,7 @@ const path = require("path");
 
 const nextConfig = {
   reactStrictMode: true,
-  webpack: (config) => {
+  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
     config.resolve.fallback = {
       ...config.resolve.fallback,
       fs: false,
@@ -17,6 +17,8 @@ const nextConfig = {
 
     return config;
   },
+  // Add transpilePackages if needed
+  transpilePackages: [],
 };
 
 module.exports = nextConfig;
