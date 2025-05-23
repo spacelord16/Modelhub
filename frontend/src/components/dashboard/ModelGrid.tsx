@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useState, useEffect } from "react";
 import {
   Card,
@@ -7,9 +8,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+} from "../ui/card";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import { Download, Star, GitFork, ArrowUpRight } from "lucide-react";
 
 interface Model {

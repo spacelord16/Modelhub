@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiClient } from "@/lib/api";
-import ProtectedRoute from "@/components/ProtectedRoute";
+import { apiClient } from "../../lib/api";
+import ProtectedRoute from "../../components/ProtectedRoute";
 
 export default function UploadPage() {
   const router = useRouter();

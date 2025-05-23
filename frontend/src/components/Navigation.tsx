@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import ThemeToggle from "./ThemeToggle";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Navigation() {
   const { user, logout, loading } = useAuth();

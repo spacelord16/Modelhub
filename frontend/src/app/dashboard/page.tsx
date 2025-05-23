@@ -7,14 +7,19 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { ModelSearchBar } from "@/components/dashboard/ModelSearchBar";
-import { ModelGrid } from "@/components/dashboard/ModelGrid";
-import { ModelMetricsChart } from "@/components/dashboard/ModelMetricsChart";
+} from "../../components/ui/card";
+import { Input } from "../../components/ui/input";
+import { Button } from "../../components/ui/button";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../../components/ui/tabs";
+import { Badge } from "../../components/ui/badge";
+import { ModelSearchBar } from "../../components/dashboard/ModelSearchBar";
+import { ModelGrid } from "../../components/dashboard/ModelGrid";
+import { ModelMetricsChart } from "../../components/dashboard/ModelMetricsChart";
 
 export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
