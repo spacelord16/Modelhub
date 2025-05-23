@@ -15,10 +15,21 @@ const nextConfig = {
       "@": path.join(__dirname, "src"),
     };
 
+    // Ensure proper module resolution
+    config.resolve.modules = [
+      path.join(__dirname, "src"),
+      "node_modules",
+      ...(config.resolve.modules || []),
+    ];
+
     return config;
   },
   // Add transpilePackages if needed
   transpilePackages: [],
+  experimental: {
+    // Enable module resolution features
+    esmExternals: true,
+  },
 };
 
 module.exports = nextConfig;
