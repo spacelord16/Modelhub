@@ -3,33 +3,21 @@ const path = require("path");
 
 const nextConfig = {
   reactStrictMode: true,
-  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+  webpack: (config) => {
     config.resolve.fallback = {
       ...config.resolve.fallback,
       fs: false,
     };
 
-    // Add alias for src directory
+    // Add alias for src directory - explicitly for Vercel
     config.resolve.alias = {
       ...config.resolve.alias,
-      "@": path.join(__dirname, "src"),
+      "@": path.resolve(__dirname, "src"),
     };
-
-    // Ensure proper module resolution
-    config.resolve.modules = [
-      path.join(__dirname, "src"),
-      "node_modules",
-      ...(config.resolve.modules || []),
-    ];
 
     return config;
   },
-  // Add transpilePackages if needed
   transpilePackages: [],
-  experimental: {
-    // Enable module resolution features
-    esmExternals: true,
-  },
 };
 
 module.exports = nextConfig;
