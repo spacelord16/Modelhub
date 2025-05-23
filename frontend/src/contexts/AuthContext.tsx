@@ -8,7 +8,7 @@ import {
   ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
-import { apiClient } from "@/lib";
+import { apiClient } from "@/lib/api";
 
 interface User {
   id: number;
