@@ -1,0 +1,16 @@
+# Minimal API dependencies for Railway deployment (under 1GB target)
+fastapi==0.104.1
+uvicorn==0.24.0
+python-multipart==0.0.6
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+sqlalchemy==2.0.23
+pydantic==2.5.2
+pydantic-settings==2.1.0
+email-validator>=2.0.0
+alembic==1.12.1
+psycopg2-binary==2.9.9
+python-dotenv==1.0.0
+aiofiles==23.2.1
+httpx==0.25.2
+requests==2.31.0 
