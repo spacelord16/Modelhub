@@ -1,9 +1,11 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
 
 class ModelVersionBase(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
     version: str
     changelog: str
     format: str
@@ -16,6 +18,8 @@ class ModelVersionCreate(ModelVersionBase):
 
 
 class ModelVersionUpdate(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
     changelog: Optional[str] = None
     model_metadata: Optional[Dict[str, Any]] = None
     performance_metrics: Optional[Dict[str, Any]] = None
@@ -28,8 +32,7 @@ class ModelVersionInDBBase(ModelVersionBase):
     size_mb: float
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True, protected_namespaces=())
 
 
 class ModelVersion(ModelVersionInDBBase):
@@ -37,6 +40,8 @@ class ModelVersion(ModelVersionInDBBase):
 
 
 class ModelBase(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
     name: str
     description: str
     framework: str
@@ -52,6 +57,8 @@ class ModelCreate(ModelBase):
 
 
 class ModelUpdate(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
     name: Optional[str] = None
     description: Optional[str] = None
     tags: Optional[List[str]] = None
@@ -68,8 +75,7 @@ class ModelInDBBase(ModelBase):
     updated_at: Optional[datetime] = None
     versions: List[ModelVersion]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True, protected_namespaces=())
 
 
 class Model(ModelInDBBase):
