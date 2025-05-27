@@ -18,7 +18,7 @@ RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy and install requirements
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Production stage
@@ -43,8 +43,8 @@ COPY --from=builder /opt/venv /opt/venv
 # Set work directory
 WORKDIR /app
 
-# Copy application code
-COPY --chown=app:app . .
+# Copy application code from backend directory
+COPY --chown=app:app backend/ .
 
 # Create directories
 RUN mkdir -p uploads sqlite_db && \
