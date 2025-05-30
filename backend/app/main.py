@@ -24,7 +24,8 @@ cors_origins = [
     "http://localhost:8000",
     "http://localhost:3001",
     "https://modelhub-pink.vercel.app",
-    # "https://modelhub.whoretard.uk",
+    "https://modelhub.whoretard.uk",  # Custom domain pointing to Railway
+    "https://modelhub-production.up.railway.app",  # Actual Railway domain
     "https://*.vercel.app",  # Allow all Vercel preview deployments
 ]
 
@@ -39,6 +40,7 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
     expose_headers=["*"],
+    max_age=86400,  # Cache preflight requests for 24 hours
 )
 
 
