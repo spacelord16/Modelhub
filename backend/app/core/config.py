@@ -16,11 +16,20 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
 
     # CORS
-    BACKEND_CORS_ORIGINS: List[str] = [
-        "http://localhost:3000",  # React frontend
-        "http://localhost:8000",  # Backend
-        "http://localhost:3001",  # Next.js frontend alternate port
-    ]
+    BACKEND_CORS_ORIGINS: List[str] = (
+        os.getenv(
+            "BACKEND_CORS_ORIGINS",
+            "http://localhost:3000,http://localhost:8000,http://localhost:3001,https://modelhub-pink.vercel.app,https://modelhub.whoretard.uk",
+        ).split(",")
+        if os.getenv("BACKEND_CORS_ORIGINS")
+        else [
+            "http://localhost:3000",  # React frontend
+            "http://localhost:8000",  # Backend
+            "http://localhost:3001",  # Next.js frontend alternate port
+            "https://modelhub-pink.vercel.app",  # Production frontend on Vercel
+            "https://modelhub.whoretard.uk",  # Production backend domain
+        ]
+    )
 
     # Database
     USE_SQLITE: bool = True  # Default to SQLite - more reliable for quick setup

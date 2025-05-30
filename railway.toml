@@ -4,6 +4,6 @@ dockerfilePath = "backend/Dockerfile.minimal"
 
 [deploy]
 restartPolicyType = "on_failure"
-restartPolicyMaxRetries = 10
+restartPolicyMaxRetries = 3
 healthcheckPath = "/health"
-healthcheckTimeout = 300 
+healthcheckTimeout = 60 
