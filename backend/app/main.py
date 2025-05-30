@@ -24,7 +24,7 @@ cors_origins = [
     "http://localhost:8000",
     "http://localhost:3001",
     "https://modelhub-pink.vercel.app",
-    "https://modelhub.whoretard.uk",
+    # "https://modelhub.whoretard.uk",
     "https://*.vercel.app",  # Allow all Vercel preview deployments
 ]
 
