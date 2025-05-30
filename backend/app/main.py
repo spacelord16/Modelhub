@@ -102,6 +102,60 @@ async def root():
     }
 
 
+# Database initialization
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database on startup"""
+    try:
+        from app.core.database import engine, Base
+        from app.models.user import User
+        from app.models.model import Model, ModelVersion
+        from app.core.security import get_password_hash
+        from sqlalchemy.orm import Session
+
+        print("🔧 Initializing database...")
+
+        # Create all tables
+        Base.metadata.create_all(bind=engine)
+        print("✅ Database tables created successfully!")
+
+        # Create admin user if it doesn't exist
+        db = Session(bind=engine)
+        try:
+            admin_user = (
+                db.query(User).filter(User.email == "admin@example.com").first()
+            )
+
+            if not admin_user:
+                print("🔧 Creating admin user...")
+                admin_user = User(
+                    email="admin@example.com",
+                    username="admin",
+                    full_name="Admin User",
+                    hashed_password=get_password_hash("admin"),
+                    is_superuser=True,
+                    is_active=True,
+                )
+                db.add(admin_user)
+                db.commit()
+                print("✅ Admin user created successfully!")
+                print("📧 Admin login: admin@example.com / admin / admin")
+            else:
+                print("ℹ️  Admin user already exists")
+
+        except Exception as e:
+            print(f"❌ Error creating admin user: {e}")
+            db.rollback()
+        finally:
+            db.close()
+
+        print("🎉 Database initialization completed!")
+
+    except Exception as e:
+        print(f"💥 Database initialization error: {e}")
+        # Don't fail startup, just log the error
+
+
 if __name__ == "__main__":
     import uvicorn
 
