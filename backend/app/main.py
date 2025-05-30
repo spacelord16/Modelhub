@@ -18,16 +18,28 @@ app = FastAPI(
     redoc_url=f"{settings.API_V1_STR}/redoc",
 )
 
-# Set up CORS
-origins = settings.BACKEND_CORS_ORIGINS
-if origins:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+# Set up CORS with explicit configuration
+cors_origins = [
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "http://localhost:3001",
+    "https://modelhub-pink.vercel.app",
+    "https://modelhub.whoretard.uk",
+    "https://*.vercel.app",  # Allow all Vercel preview deployments
+]
+
+# Print CORS origins for debugging
+print(f"🔧 CORS Origins configured: {cors_origins}")
+print(f"🔧 Settings CORS Origins: {settings.BACKEND_CORS_ORIGINS}")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins + settings.BACKEND_CORS_ORIGINS,  # Combine both lists
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=["*"],
+    expose_headers=["*"],
+)
 
 
 # Error handling
@@ -65,7 +77,17 @@ async def download_file(
 # Health check endpoint
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"}
+    return {
+        "status": "healthy",
+        "cors_origins": cors_origins + settings.BACKEND_CORS_ORIGINS,
+        "port": os.getenv("PORT", "8000"),
+    }
+
+
+# CORS test endpoint
+@app.options("/api/v1/auth/token")
+async def cors_test():
+    return {"message": "CORS test successful"}
 
 
 # Root endpoint
