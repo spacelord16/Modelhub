@@ -1,4 +1,4 @@
-# Minimal API dependencies for Railway deployment (under 1GB target)
+# Minimal API dependencies for Railway deployment (ultra-lightweight)
 fastapi==0.104.1
 uvicorn==0.24.0
 python-multipart==0.0.6

@@ -1,37 +1,56 @@
-# Ultra-minimal production build for Railway
-FROM python:3.11-slim
+# Multi-stage build for ultra-minimal Railway deployment
+FROM python:3.11-slim as builder
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=1 \
+# Set build environment variables
+ENV PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Install only essential system dependencies
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Install Python dependencies
+COPY backend/requirements-minimal.txt requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Production stage - ultra minimal
+FROM python:3.11-slim
+
+# Set runtime environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PATH="/opt/venv/bin:$PATH"
+
+# Install only runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
     && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+    && apt-get clean \
+    && apt-get autoremove -y
 
 # Create app user
 RUN addgroup --system app && adduser --system --group app
 
+# Copy virtual environment from builder (smaller than system install)
+COPY --from=builder /opt/venv /opt/venv
+
 # Set work directory
 WORKDIR /app
-
-# Copy and install minimal requirements
-COPY backend/requirements-minimal.txt requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy only essential application code
 COPY --chown=app:app backend/app app/
 COPY --chown=app:app backend/alembic alembic/
 COPY --chown=app:app backend/alembic.ini alembic.ini
 
-# Create necessary directories and clean up
+# Create necessary directories
 RUN mkdir -p uploads sqlite_db \
-    && chown -R app:app /app \
-    && rm requirements.txt
+    && chown -R app:app /app
 
 # Switch to app user
 USER app
@@ -39,7 +58,7 @@ USER app
 # Expose port
 EXPOSE 8000
 
-# Health check
+# Minimal health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
