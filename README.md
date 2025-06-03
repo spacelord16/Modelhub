@@ -2,6 +2,18 @@
 
 A platform for sharing, discovering, and deploying deep learning models.
 
+## 📚 Documentation
+
+📖 **[View Comprehensive System Design Documentation](https://spacelord16.github.io/Modelhub/)**
+
+The complete system architecture, technical specifications, and implementation details are available in our comprehensive documentation site. This includes:
+
+- System architecture and design patterns
+- Database schema and API specifications
+- Security architecture and deployment strategies
+- Technology stack details and scalability considerations
+- Development and deployment workflows
+
 ## Project Structure
 
 - `backend/`: FastAPI backend service
