@@ -52,7 +52,7 @@ def get_deployments(
         deployments=deployment_list,
         total=len(deployment_list),
         page=skip // limit + 1,
-        per_page=limit,
+        limit=limit,
     )
 
 
@@ -67,25 +67,20 @@ def create_deployment(
     return deployment_service.create_deployment(deployment_in, current_user.id)
 
 
-@router.get("/{deployment_id}", response_model=DeploymentStatusResponse)
+@router.get("/{deployment_id}", response_model=Deployment)
 def get_deployment(
     deployment_id: int = Path(..., gt=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
-    """Get deployment details with status and metrics"""
+    """Get deployment details"""
     deployment_service = DeploymentService(db)
 
     deployment = deployment_service.get_deployment(deployment_id)
     if not deployment or deployment.owner_id != current_user.id:
         raise HTTPException(status_code=404, detail="Deployment not found")
 
-    metrics = deployment_service.get_deployment_metrics(deployment_id)
-    logs = deployment_service.get_deployment_logs(deployment_id, limit=10)
-
-    return DeploymentStatusResponse(
-        deployment=deployment, metrics=metrics, recent_logs=logs
-    )
+    return deployment
 
 
 @router.put("/{deployment_id}", response_model=Deployment)

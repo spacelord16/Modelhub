@@ -46,6 +46,7 @@ def read_models(
     current_user: User = Depends(get_current_active_user),
 ):
     """Get all models with optional filtering"""
+    # For now, return all models - in production you might want to filter by visibility
     models = get_models(
         db=db, skip=skip, limit=limit, task_type=task_type, framework=framework
     )

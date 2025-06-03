@@ -110,10 +110,11 @@ async def startup_event():
         from app.core.database import engine, Base
         from app.models.user import User
         from app.models.model import Model, ModelVersion
+        from app.models.deployment import ModelDeployment, DeploymentLog
         from app.core.security import get_password_hash
         from sqlalchemy.orm import Session
 
-        print("🔧 Initializing database...")
+        print("Initializing database...")
 
         # Create all tables
         Base.metadata.create_all(bind=engine)
@@ -138,21 +139,21 @@ async def startup_event():
                 )
                 db.add(admin_user)
                 db.commit()
-                print("✅ Admin user created successfully!")
-                print("📧 Admin login: admin@example.com / admin / admin")
+                print("Admin user created successfully!")
+                print("Admin login: admin@example.com / admin / admin")
             else:
-                print("ℹ️  Admin user already exists")
+                print("Admin user already exists")
 
         except Exception as e:
-            print(f"❌ Error creating admin user: {e}")
+            print(f"Error creating admin user: {e}")
             db.rollback()
         finally:
             db.close()
 
-        print("🎉 Database initialization completed!")
+        print("Database initialization completed!")
 
     except Exception as e:
-        print(f"💥 Database initialization error: {e}")
+        print(f"Database initialization error: {e}")
         # Don't fail startup, just log the error
 
 
