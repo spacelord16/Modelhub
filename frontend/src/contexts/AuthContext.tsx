@@ -51,11 +51,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const login = async (email: string, password: string) => {
-    const response = await apiClient.login(email, password);
-    // Token is stored by the API client
-    const userData = await apiClient.getCurrentUser();
-    setUser(userData);
-    router.push("/models");
+    try {
+      const response = await apiClient.login(email, password);
+      // Token is stored by the API client
+      const userData = await apiClient.getCurrentUser();
+      setUser(userData);
+      router.push("/dashboard");
+    } catch (error) {
+      // Re-throw the error so the login page can handle it
+      throw error;
+    }
   };
 
   const register = async (name: string, email: string, password: string) => {
@@ -67,7 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Token is stored by the API client
     const userData = await apiClient.getCurrentUser();
     setUser(userData);
-    router.push("/models");
+    router.push("/dashboard");
   };
 
   const logout = () => {

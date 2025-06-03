@@ -11,9 +11,11 @@ const api = axios.create({
 
 // Add request interceptor for authentication
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
   }
   return config
 })
@@ -198,7 +200,7 @@ export const apiClient = {
       // If registration is successful, automatically log in
       const loginResponse = await api.post('/auth/token', 
         new URLSearchParams({
-          username: userData.email,
+          username: username, // Use the actual username, not email
           password: userData.password
         }), 
         {

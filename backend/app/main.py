@@ -23,6 +23,8 @@ cors_origins = [
     "http://localhost:3000",
     "http://localhost:8000",
     "http://localhost:3001",
+    "http://localhost:3002",
+    "http://localhost:3003",
     "https://modelhub-pink.vercel.app",
     "https://modelhub.whoretard.uk",  # Custom domain pointing to Railway
     "https://modelhub-production.up.railway.app",  # Actual Railway domain

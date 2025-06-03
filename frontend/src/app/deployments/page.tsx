@@ -114,7 +114,7 @@ export default function DeploymentsPage() {
               onChange={(e) => setFilter(e.target.value)}
               className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
-              <option value="">All Statuses</option>
+              <option value="">All Status</option>
               <option value="running">Running</option>
               <option value="pending">Pending</option>
               <option value="building">Building</option>
