@@ -79,4 +79,4 @@ yarn-error.log*
 
 # System Files
 .DS_Store
-Thumbs.db 
+Thumbs.db backend/sqlite_db/*.db
