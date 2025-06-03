@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Deep Learning Model Hub - System Design</title>
+  <style>
+    :root {
+      --primary-color: #2563eb;
+      --secondary-color: #1e40af;
+      --accent-color: #3b82f6;
+      --text-color: #1f2937;
+      --bg-color: #ffffff;
+      --code-bg: #f8fafc;
+      --border-color: #e5e7eb;
+      --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+      line-height: 1.7;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: var(--text-color);
+    }
+
+    .container {
+      background: var(--bg-color);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 40px;
+      margin: 20px 0;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding: 2rem 0;
+      border-bottom: 3px solid var(--primary-color);
+    }
+
+    h1 {
+      color: var(--primary-color);
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+
+    h2 {
+      color: var(--secondary-color);
+      font-size: 2rem;
+      font-weight: 600;
+      margin-top: 2.5rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--accent-color);
+    }
+
+    h3 {
+      color: var(--text-color);
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    h4 {
+      color: var(--text-color);
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    h5, h6 {
+      color: var(--text-color);
+      font-weight: 600;
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .table-of-contents {
+      background: var(--code-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 2rem;
+      margin: 2rem 0;
+    }
+
+    .table-of-contents h2 {
+      margin-top: 0;
+      color: var(--primary-color);
+      border-bottom: none;
+      font-size: 1.5rem;
+    }
+
+    .table-of-contents ul {
+      margin: 0;
+      padding-left: 1.5rem;
+    }
+
+    .table-of-contents a {
+      color: var(--primary-color);
+      text-decoration: none;
+      padding: 0.25rem 0;
+      display: block;
+      transition: color 0.2s ease;
+    }
+
+    .table-of-contents a:hover {
+      color: var(--secondary-color);
+      text-decoration: underline;
+    }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 1.5rem;
+      overflow-x: auto;
+      font-family: 'SFMono-Regular', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+      font-size: 0.875rem;
+      line-height: 1.6;
+      margin: 1.5rem 0;
+    }
+
+    code {
+      background: var(--code-bg);
+      padding: 0.25rem 0.5rem;
+      border-radius: 3px;
+      font-family: 'SFMono-Regular', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+      font-size: 0.875rem;
+      border: 1px solid var(--border-color);
+    }
+
+    pre code {
+      background: none;
+      padding: 0;
+      border: none;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1.5rem 0;
+      background: var(--bg-color);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    th, td {
+      border: 1px solid var(--border-color);
+      padding: 12px 16px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--primary-color);
+      color: white;
+      font-weight: 600;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    tr:nth-child(even) {
+      background: #f9fafb;
+    }
+
+    tr:hover {
+      background: #f3f4f6;
+    }
+
+    blockquote {
+      border-left: 4px solid var(--primary-color);
+      margin: 1.5rem 0;
+      padding: 1rem 1.5rem;
+      background: var(--code-bg);
+      border-radius: 0 6px 6px 0;
+    }
+
+    .highlight {
+      background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      margin: 1rem 0;
+      border-left: 4px solid var(--primary-color);
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 3rem;
+      padding: 2rem 0;
+      border-top: 1px solid var(--border-color);
+      color: #6b7280;
+      font-size: 0.875rem;
+    }
+
+    .badge {
+      display: inline-block;
+      background: var(--primary-color);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin: 0.25rem;
+    }
+
+    .architecture-diagram {
+      text-align: center;
+      margin: 2rem 0;
+      padding: 2rem;
+      background: var(--code-bg);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+        font-size: 16px;
+      }
+
+      .container {
+        padding: 20px;
+        margin: 10px 0;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+      }
+
+      h3 {
+        font-size: 1.25rem;
+      }
+
+      pre {
+        padding: 1rem;
+        font-size: 0.8rem;
+      }
+
+      table {
+        font-size: 0.875rem;
+      }
+
+      th, td {
+        padding: 8px 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 15px;
+      }
+
+      h1 {
+        font-size: 1.75rem;
+      }
+
+      pre {
+        overflow-x: scroll;
+      }
+
+      th, td {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+      }
+    }
+
+    /* Print Styles */
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+      }
+
+      .container {
+        box-shadow: none;
+        padding: 0;
+      }
+
+      h1, h2 {
+        page-break-after: avoid;
+      }
+
+      table {
+        page-break-inside: avoid;
+      }
+
+      pre {
+        page-break-inside: avoid;
+      }
+    }
+
+    /* Mermaid diagram styling */
+    .mermaid {
+      text-align: center;
+      margin: 2rem 0;
+    }
+
+    /* Status indicators */
+    .status-supported::before {
+      content: "✅ ";
+      color: #10b981;
+    }
+
+    .status-planned::before {
+      content: "🔄 ";
+      color: #f59e0b;
+    }
+
+    .status-beta::before {
+      content: "🧪 ";
+      color: #8b5cf6;
+    }
+  </style>
+  <script src="https://unpkg.com/mermaid@8.9.2/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({startOnLoad:true});
+  </script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Deep Learning Model Hub</h1>
+      <p style="font-size: 1.25rem; color: #6b7280; margin: 0;">Comprehensive System Design Documentation</p>
+      <div style="margin-top: 1rem;">
+        <span class="badge">FastAPI</span>
+        <span class="badge">Next.js</span>
+        <span class="badge">PostgreSQL</span>
+        <span class="badge">Docker</span>
+        <span class="badge">Railway</span>
+        <span class="badge">Vercel</span>
+      </div>
+    </header>
+
+    <!-- ... existing content ... -->
+</body>
+</html>
