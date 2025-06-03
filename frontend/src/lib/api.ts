@@ -55,6 +55,70 @@ export interface ModelCreate {
   model_metadata?: Record<string, any>
 }
 
+export interface Deployment {
+  id: number
+  name: string
+  description?: string
+  model_id: number
+  model_version_id?: number
+  owner_id: number
+  deployment_type: string
+  status: string
+  endpoint_url?: string
+  error_message?: string
+  
+  // Resource configuration
+  cpu_limit: number
+  memory_limit: number
+  max_replicas: number
+  min_replicas: number
+  
+  // Configuration
+  environment_vars: Record<string, string>
+  health_check_path: string
+  
+  // Auto-scaling
+  auto_scale_enabled: boolean
+  scale_up_threshold: number
+  scale_down_threshold: number
+  
+  // Timestamps
+  created_at: string
+  updated_at?: string
+  deployed_at?: string
+  
+  // Metrics
+  request_count: number
+  last_request_at?: string
+  avg_response_time?: number
+}
+
+export interface DeploymentWithModel extends Deployment {
+  model_name: string
+  model_framework: string
+  model_version?: string
+}
+
+export interface DeploymentMetrics {
+  request_count: number
+  avg_response_time?: number
+  last_request_at?: string
+  last_health_check?: string
+  current_replicas: number
+  cpu_usage?: number
+  memory_usage?: number
+}
+
+export interface DeploymentLog {
+  id: number
+  deployment_id: number
+  log_level: string
+  message: string
+  component?: string
+  log_metadata: Record<string, any>
+  created_at: string
+}
+
 export const apiClient = {
   // Model endpoints
   getModels: async (filters?: { task_type?: string; framework?: string }) => {
@@ -115,23 +179,27 @@ export const apiClient = {
     return response.data
   },
 
-  register: async (full_name: string, email: string, password: string) => {
+  register: async (userData: {
+    username: string
+    email: string
+    password: string
+  }) => {
     try {
-      // Generate a username from the email (before the @)
-      const username = email.split('@')[0];
+      // Generate a username from the email (before the @) if not provided
+      const username = userData.username || userData.email.split('@')[0];
       
       const response = await api.post('/auth/register', { 
-        email,
+        email: userData.email,
         username, 
-        password,
-        full_name
+        password: userData.password,
+        full_name: userData.username // Use username as full_name for now
       })
       
       // If registration is successful, automatically log in
       const loginResponse = await api.post('/auth/token', 
         new URLSearchParams({
-          username: email,
-          password: password
+          username: userData.email,
+          password: userData.password
         }), 
         {
           headers: {
@@ -159,7 +227,99 @@ export const apiClient = {
       }
     }
   },
-  
+
+  logout: () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token')
+    }
+  },
+
+  // Deployment endpoints
+  getDeployments: async (filters?: { 
+    status?: string 
+    skip?: number
+    limit?: number
+  }) => {
+    const params = new URLSearchParams()
+    if (filters?.status) params.append('status', filters.status)
+    if (filters?.skip) params.append('skip', filters.skip.toString())
+    if (filters?.limit) params.append('limit', filters.limit.toString())
+    
+    const response = await api.get('/deployments', { params })
+    return response.data
+  },
+
+  createDeployment: async (deploymentData: {
+    name: string
+    description?: string
+    model_id: number
+    model_version_id?: number
+    deployment_type?: string
+    cpu_limit?: number
+    memory_limit?: number
+    max_replicas?: number
+    min_replicas?: number
+    environment_vars?: Record<string, string>
+    auto_scale_enabled?: boolean
+    scale_up_threshold?: number
+    scale_down_threshold?: number
+  }) => {
+    const response = await api.post('/deployments', deploymentData)
+    return response.data
+  },
+
+  getDeployment: async (deploymentId: number) => {
+    const response = await api.get(`/deployments/${deploymentId}`)
+    return response.data
+  },
+
+  updateDeployment: async (deploymentId: number, updates: {
+    name?: string
+    description?: string
+    cpu_limit?: number
+    memory_limit?: number
+    max_replicas?: number
+    min_replicas?: number
+    environment_vars?: Record<string, string>
+    auto_scale_enabled?: boolean
+    scale_up_threshold?: number
+    scale_down_threshold?: number
+  }) => {
+    const response = await api.put(`/deployments/${deploymentId}`, updates)
+    return response.data
+  },
+
+  deleteDeployment: async (deploymentId: number) => {
+    const response = await api.delete(`/deployments/${deploymentId}`)
+    return response.data
+  },
+
+  deploymentAction: async (deploymentId: number, action: string, parameters?: Record<string, any>) => {
+    const response = await api.post(`/deployments/${deploymentId}/actions`, {
+      action,
+      parameters: parameters || {}
+    })
+    return response.data
+  },
+
+  getDeploymentMetrics: async (deploymentId: number) => {
+    const response = await api.get(`/deployments/${deploymentId}/metrics`)
+    return response.data
+  },
+
+  getDeploymentLogs: async (deploymentId: number, limit: number = 100) => {
+    const params = new URLSearchParams()
+    params.append('limit', limit.toString())
+    
+    const response = await api.get(`/deployments/${deploymentId}/logs`, { params })
+    return response.data
+  },
+
+  predict: async (deploymentId: number, payload: Record<string, any>) => {
+    const response = await api.post(`/deployments/${deploymentId}/predict`, payload)
+    return response.data
+  },
+
   getCurrentUser: async () => {
     const response = await api.get('/users/me')
     return response.data

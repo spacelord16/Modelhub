@@ -34,28 +34,16 @@ export default function Navigation() {
                 Upload
               </Link>
               <Link
-                href="/deploy"
+                href="/deployments"
                 className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
               >
-                Deploy
+                Deployments
               </Link>
               <Link
-                href="/api-test"
+                href="/dashboard"
                 className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
               >
-                API Test
-              </Link>
-              <Link
-                href="/auth-test"
-                className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-              >
-                Auth Test
-              </Link>
-              <Link
-                href="/token-debug"
-                className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-              >
-                Token Debug
+                Dashboard
               </Link>
             </div>
           </div>

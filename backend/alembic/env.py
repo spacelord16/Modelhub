@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from app.core.database import Base, SQLALCHEMY_DATABASE_URI
 from app.models.model import Model, ModelVersion
 from app.models.user import User
+from app.models.deployment import ModelDeployment, DeploymentLog
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
