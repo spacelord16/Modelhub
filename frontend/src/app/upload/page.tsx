@@ -95,7 +95,7 @@ export default function UploadPage() {
       submitData.append("model_metadata", JSON.stringify({}));
 
       await apiClient.uploadModel(submitData);
-      router.push("/models");
+      router.push("/dashboard");
     } catch (err) {
       console.error(err);
       setError(
