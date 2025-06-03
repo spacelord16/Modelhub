@@ -80,3 +80,5 @@ yarn-error.log*
 # System Files
 .DS_Store
 Thumbs.db backend/sqlite_db/*.db
+Deep_Learning_Model_Hub_System_Design.pdf
+Deep_Learning_Model_Hub_System_Design.html
