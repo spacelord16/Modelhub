@@ -1,0 +1,10 @@
+{
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://modelhub-production.up.railway.app/api/v1"
+  },
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_API_URL": "https://modelhub-production.up.railway.app/api/v1"
+    }
+  }
+} 
