@@ -1,357 +1,1356 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="generator" content="pandoc" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>Deep Learning Model Hub - System Design</title>
-  <style>
-    :root {
-      --primary-color: #2563eb;
-      --secondary-color: #1e40af;
-      --accent-color: #3b82f6;
-      --text-color: #1f2937;
-      --bg-color: #ffffff;
-      --code-bg: #f8fafc;
-      --border-color: #e5e7eb;
-      --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-      line-height: 1.7;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      color: var(--text-color);
-    }
-
-    .container {
-      background: var(--bg-color);
-      border-radius: 12px;
-      box-shadow: var(--shadow);
-      padding: 40px;
-      margin: 20px 0;
-    }
-
-    header {
-      text-align: center;
-      margin-bottom: 3rem;
-      padding: 2rem 0;
-      border-bottom: 3px solid var(--primary-color);
-    }
-
-    h1 {
-      color: var(--primary-color);
-      font-size: 2.5rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-      text-align: center;
-    }
-
-    h2 {
-      color: var(--secondary-color);
-      font-size: 2rem;
-      font-weight: 600;
-      margin-top: 2.5rem;
-      margin-bottom: 1rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 2px solid var(--accent-color);
-    }
-
-    h3 {
-      color: var(--text-color);
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin-top: 2rem;
-      margin-bottom: 1rem;
-    }
-
-    h4 {
-      color: var(--text-color);
-      font-size: 1.25rem;
-      font-weight: 600;
-      margin-top: 1.5rem;
-      margin-bottom: 0.75rem;
-    }
-
-    h5, h6 {
-      color: var(--text-color);
-      font-weight: 600;
-      margin-top: 1rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .table-of-contents {
-      background: var(--code-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 2rem;
-      margin: 2rem 0;
-    }
-
-    .table-of-contents h2 {
-      margin-top: 0;
-      color: var(--primary-color);
-      border-bottom: none;
-      font-size: 1.5rem;
-    }
-
-    .table-of-contents ul {
-      margin: 0;
-      padding-left: 1.5rem;
-    }
-
-    .table-of-contents a {
-      color: var(--primary-color);
-      text-decoration: none;
-      padding: 0.25rem 0;
-      display: block;
-      transition: color 0.2s ease;
-    }
-
-    .table-of-contents a:hover {
-      color: var(--secondary-color);
-      text-decoration: underline;
-    }
-
-    pre {
-      background: var(--code-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      padding: 1.5rem;
-      overflow-x: auto;
-      font-family: 'SFMono-Regular', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
-      font-size: 0.875rem;
-      line-height: 1.6;
-      margin: 1.5rem 0;
-    }
-
-    code {
-      background: var(--code-bg);
-      padding: 0.25rem 0.5rem;
-      border-radius: 3px;
-      font-family: 'SFMono-Regular', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
-      font-size: 0.875rem;
-      border: 1px solid var(--border-color);
-    }
-
-    pre code {
-      background: none;
-      padding: 0;
-      border: none;
-    }
-
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      margin: 1.5rem 0;
-      background: var(--bg-color);
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: var(--shadow);
-    }
-
-    th, td {
-      border: 1px solid var(--border-color);
-      padding: 12px 16px;
-      text-align: left;
-      vertical-align: top;
-    }
-
-    th {
-      background: var(--primary-color);
-      color: white;
-      font-weight: 600;
-      font-size: 0.875rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    tr:nth-child(even) {
-      background: #f9fafb;
-    }
-
-    tr:hover {
-      background: #f3f4f6;
-    }
-
-    blockquote {
-      border-left: 4px solid var(--primary-color);
-      margin: 1.5rem 0;
-      padding: 1rem 1.5rem;
-      background: var(--code-bg);
-      border-radius: 0 6px 6px 0;
-    }
-
-    .highlight {
-      background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
-      padding: 1rem 1.5rem;
-      border-radius: 8px;
-      margin: 1rem 0;
-      border-left: 4px solid var(--primary-color);
-    }
-
-    .footer {
-      text-align: center;
-      margin-top: 3rem;
-      padding: 2rem 0;
-      border-top: 1px solid var(--border-color);
-      color: #6b7280;
-      font-size: 0.875rem;
-    }
-
-    .badge {
-      display: inline-block;
-      background: var(--primary-color);
-      color: white;
-      padding: 0.25rem 0.75rem;
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      margin: 0.25rem;
-    }
-
-    .architecture-diagram {
-      text-align: center;
-      margin: 2rem 0;
-      padding: 2rem;
-      background: var(--code-bg);
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-    }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
-      body {
-        padding: 10px;
-        font-size: 16px;
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Deep Learning Model Hub - System Design</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
       }
 
-      .container {
-        padding: 20px;
-        margin: 10px 0;
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background: #fff;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+      }
+
+      header {
+        border-bottom: 2px solid #000;
+        padding-bottom: 30px;
+        margin-bottom: 40px;
+        text-align: center;
       }
 
       h1 {
-        font-size: 2rem;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #000;
+        margin-bottom: 10px;
+      }
+
+      .subtitle {
+        font-size: 1.2rem;
+        color: #666;
+        margin-bottom: 20px;
+      }
+
+      .tech-stack {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .tech-badge {
+        background: #000;
+        color: #fff;
+        padding: 5px 12px;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        font-weight: 500;
+      }
+
+      nav.toc {
+        background: #f8f8f8;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 20px;
+        margin: 30px 0;
+      }
+
+      nav.toc h2 {
+        color: #000;
+        font-size: 1.3rem;
+        margin-bottom: 15px;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+      }
+
+      nav.toc ul {
+        list-style: none;
+      }
+
+      nav.toc li {
+        margin: 5px 0;
+      }
+
+      nav.toc a {
+        color: #000;
+        text-decoration: none;
+        padding: 5px 0;
+        display: block;
+        border-left: 3px solid transparent;
+        padding-left: 15px;
+        transition: all 0.2s ease;
+      }
+
+      nav.toc a:hover {
+        border-left-color: #000;
+        background: #f0f0f0;
       }
 
       h2 {
-        font-size: 1.5rem;
+        color: #000;
+        font-size: 1.8rem;
+        margin: 40px 0 20px 0;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
       }
 
       h3 {
-        font-size: 1.25rem;
+        color: #000;
+        font-size: 1.4rem;
+        margin: 30px 0 15px 0;
       }
 
-      pre {
-        padding: 1rem;
-        font-size: 0.8rem;
+      h4 {
+        color: #000;
+        font-size: 1.2rem;
+        margin: 25px 0 10px 0;
+      }
+
+      h5,
+      h6 {
+        color: #000;
+        margin: 20px 0 10px 0;
+      }
+
+      p {
+        margin: 15px 0;
+        text-align: justify;
+      }
+
+      ul,
+      ol {
+        margin: 15px 0;
+        padding-left: 25px;
+      }
+
+      li {
+        margin: 5px 0;
       }
 
       table {
-        font-size: 0.875rem;
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        border: 1px solid #ddd;
       }
 
-      th, td {
-        padding: 8px 12px;
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 12px;
+        text-align: left;
+        vertical-align: top;
       }
-    }
 
-    @media (max-width: 480px) {
-      .container {
+      th {
+        background: #f8f8f8;
+        font-weight: 600;
+        color: #000;
+      }
+
+      tr:nth-child(even) {
+        background: #f9f9f9;
+      }
+
+      pre {
+        background: #f5f5f5;
+        border: 1px solid #ddd;
+        border-radius: 4px;
         padding: 15px;
+        overflow-x: auto;
+        font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+        font-size: 0.9rem;
+        margin: 15px 0;
       }
 
-      h1 {
-        font-size: 1.75rem;
+      code {
+        background: #f5f5f5;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+        font-size: 0.9rem;
+        border: 1px solid #ddd;
       }
 
-      pre {
-        overflow-x: scroll;
-      }
-
-      th, td {
-        padding: 6px 10px;
-        font-size: 0.8rem;
-      }
-    }
-
-    /* Print Styles */
-    @media print {
-      body {
-        background: white;
+      pre code {
+        background: none;
         padding: 0;
+        border: none;
       }
 
-      .container {
-        box-shadow: none;
-        padding: 0;
+      blockquote {
+        border-left: 4px solid #000;
+        margin: 20px 0;
+        padding: 10px 20px;
+        background: #f8f8f8;
+        font-style: italic;
       }
 
-      h1, h2 {
-        page-break-after: avoid;
+      .footer {
+        margin-top: 50px;
+        padding-top: 20px;
+        border-top: 1px solid #ddd;
+        text-align: center;
+        color: #666;
+        font-size: 0.9rem;
       }
 
-      table {
-        page-break-inside: avoid;
+      .back-to-top {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #000;
+        color: #fff;
+        padding: 10px 15px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: background 0.2s ease;
+        display: none;
       }
 
-      pre {
-        page-break-inside: avoid;
+      .back-to-top:hover {
+        background: #333;
       }
-    }
 
-    /* Mermaid diagram styling */
-    .mermaid {
-      text-align: center;
-      margin: 2rem 0;
-    }
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        body {
+          padding: 20px 15px;
+        }
 
-    /* Status indicators */
-    .status-supported::before {
-      content: "✅ ";
-      color: #10b981;
-    }
+        h1 {
+          font-size: 2rem;
+        }
 
-    .status-planned::before {
-      content: "🔄 ";
-      color: #f59e0b;
-    }
+        .tech-stack {
+          justify-content: center;
+        }
 
-    .status-beta::before {
-      content: "🧪 ";
-      color: #8b5cf6;
-    }
-  </style>
-  <script src="https://unpkg.com/mermaid@8.9.2/dist/mermaid.min.js"></script>
-  <script>
-    mermaid.initialize({startOnLoad:true});
-  </script>
-</head>
-<body>
-  <div class="container">
+        table {
+          font-size: 0.9rem;
+        }
+
+        th,
+        td {
+          padding: 8px;
+        }
+
+        pre {
+          font-size: 0.8rem;
+          padding: 10px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        h1 {
+          font-size: 1.75rem;
+        }
+
+        h2 {
+          font-size: 1.5rem;
+        }
+
+        h3 {
+          font-size: 1.25rem;
+        }
+
+        .tech-badge {
+          font-size: 0.8rem;
+          padding: 4px 8px;
+        }
+      }
+
+      /* Print Styles */
+      @media print {
+        .back-to-top {
+          display: none;
+        }
+
+        body {
+          max-width: none;
+          padding: 0;
+        }
+
+        h1,
+        h2,
+        h3 {
+          page-break-after: avoid;
+        }
+
+        table,
+        pre {
+          page-break-inside: avoid;
+        }
+      }
+    </style>
+  </head>
+  <body>
     <header>
       <h1>Deep Learning Model Hub</h1>
-      <p style="font-size: 1.25rem; color: #6b7280; margin: 0;">Comprehensive System Design Documentation</p>
-      <div style="margin-top: 1rem;">
-        <span class="badge">FastAPI</span>
-        <span class="badge">Next.js</span>
-        <span class="badge">PostgreSQL</span>
-        <span class="badge">Docker</span>
-        <span class="badge">Railway</span>
-        <span class="badge">Vercel</span>
+      <p class="subtitle">Comprehensive System Design Documentation</p>
+      <div class="tech-stack">
+        <span class="tech-badge">FastAPI</span>
+        <span class="tech-badge">Next.js</span>
+        <span class="tech-badge">PostgreSQL</span>
+        <span class="tech-badge">Docker</span>
+        <span class="tech-badge">Railway</span>
+        <span class="tech-badge">Vercel</span>
       </div>
     </header>
 
-    <!-- ... existing content ... -->
-</body>
-</html>
+    <nav class="toc">
+      <h2>Table of Contents</h2>
+      <ul>
+        <li><a href="#system-overview">1. System Overview</a></li>
+        <li><a href="#architecture-patterns">2. Architecture Patterns</a></li>
+        <li><a href="#technology-stack">3. Technology Stack</a></li>
+        <li><a href="#system-components">4. System Components</a></li>
+        <li>
+          <a href="#data-models-database-design"
+            >5. Data Models & Database Design</a
+          >
+        </li>
+        <li><a href="#api-design">6. API Design</a></li>
+        <li><a href="#frontend-architecture">7. Frontend Architecture</a></li>
+        <li><a href="#security-architecture">8. Security Architecture</a></li>
+        <li>
+          <a href="#deployment-architecture">9. Deployment Architecture</a>
+        </li>
+        <li><a href="#data-flow">10. Data Flow</a></li>
+        <li>
+          <a href="#scalability-performance">11. Scalability & Performance</a>
+        </li>
+        <li>
+          <a href="#infrastructure-as-code">12. Infrastructure as Code</a>
+        </li>
+        <li>
+          <a href="#monitoring-observability">13. Monitoring & Observability</a>
+        </li>
+        <li><a href="#cicd-pipeline">14. CI/CD Pipeline</a></li>
+      </ul>
+    </nav>
 
+    <main>
+      <section id="system-overview">
+        <h2>System Overview</h2>
+        <p>
+          The Deep Learning Model Hub is a full-stack web application designed
+          to facilitate the sharing, discovery, testing, and deployment of deep
+          learning models. It serves as a centralized platform where data
+          scientists and ML engineers can upload models, browse existing models,
+          and deploy them for inference.
+        </p>
+
+        <h3>Core Capabilities</h3>
+        <ul>
+          <li>
+            <strong>Model Management</strong>: Upload, version, and organize ML
+            models
+          </li>
+          <li>
+            <strong>Model Discovery</strong>: Browse, search, and filter models
+            by various criteria
+          </li>
+          <li>
+            <strong>Model Deployment</strong>: Deploy models as REST API
+            endpoints
+          </li>
+          <li>
+            <strong>User Management</strong>: Authentication, authorization, and
+            user profiles
+          </li>
+          <li>
+            <strong>Model Testing</strong>: Interactive web interface for model
+            inference
+          </li>
+          <li>
+            <strong>Performance Monitoring</strong>: Track model usage and
+            performance metrics
+          </li>
+        </ul>
+
+        <h3>High-Level Architecture</h3>
+        <pre><code>┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Frontend      │    │    Backend      │    │    Database     │
+│   (Next.js)     │◄──►│   (FastAPI)     │◄──►│ (PostgreSQL/    │
+│                 │    │                 │    │  SQLite)        │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │
+         │                       │                       │
+         ▼                       ▼                       ▼
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   CDN/Vercel    │    │  Container      │    │   File Storage  │
+│   Hosting       │    │  Platform       │    │   (S3/Local)    │
+│                 │    │  (Railway)      │    │                 │
+└─────────────────┘    └─────────────────┘    └─────────────────┘</code></pre>
+      </section>
+
+      <section id="architecture-patterns">
+        <h2>Architecture Patterns</h2>
+
+        <h3>1. Layered Architecture</h3>
+        <p>The backend follows a layered architecture pattern:</p>
+        <ul>
+          <li>
+            <strong>Presentation Layer</strong>: FastAPI endpoints and
+            request/response handling
+          </li>
+          <li>
+            <strong>Business Logic Layer</strong>: Services for model
+            management, deployment, and user operations
+          </li>
+          <li>
+            <strong>Data Access Layer</strong>: SQLAlchemy ORM models and
+            database operations
+          </li>
+          <li>
+            <strong>Infrastructure Layer</strong>: External services (S3,
+            deployment platforms)
+          </li>
+        </ul>
+
+        <h3>2. Model-View-Controller (MVC)</h3>
+        <ul>
+          <li>
+            <strong>Models</strong>: SQLAlchemy database models
+            (<code>User</code>, <code>Model</code>, <code>ModelVersion</code>,
+            <code>ModelDeployment</code>)
+          </li>
+          <li><strong>Views</strong>: Next.js React components and pages</li>
+          <li>
+            <strong>Controllers</strong>: FastAPI route handlers and business
+            logic services
+          </li>
+        </ul>
+
+        <h3>3. Repository Pattern</h3>
+        <p>
+          Database operations are abstracted through SQLAlchemy ORM, providing a
+          clean separation between business logic and data persistence.
+        </p>
+
+        <h3>4. Microservices-Ready Design</h3>
+        <p>
+          While currently monolithic, the system is designed with clear service
+          boundaries that can be extracted into microservices:
+        </p>
+        <ul>
+          <li>Authentication Service</li>
+          <li>Model Management Service</li>
+          <li>Deployment Service</li>
+          <li>User Management Service</li>
+        </ul>
+      </section>
+
+      <section id="technology-stack">
+        <h2>Technology Stack</h2>
+
+        <h3>Frontend Stack</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Technology</th>
+              <th>Version</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Framework</td>
+              <td>Next.js</td>
+              <td>14.2.29</td>
+              <td>React-based web framework with SSR</td>
+            </tr>
+            <tr>
+              <td>Language</td>
+              <td>TypeScript</td>
+              <td>5.3.3</td>
+              <td>Type-safe JavaScript</td>
+            </tr>
+            <tr>
+              <td>Styling</td>
+              <td>Tailwind CSS</td>
+              <td>3.4.1</td>
+              <td>Utility-first CSS framework</td>
+            </tr>
+            <tr>
+              <td>HTTP Client</td>
+              <td>Axios</td>
+              <td>1.9.0</td>
+              <td>API communication</td>
+            </tr>
+            <tr>
+              <td>UI Components</td>
+              <td>Radix UI</td>
+              <td>Various</td>
+              <td>Accessible component primitives</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Backend Stack</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Technology</th>
+              <th>Version</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Framework</td>
+              <td>FastAPI</td>
+              <td>0.104.1</td>
+              <td>High-performance async Python web framework</td>
+            </tr>
+            <tr>
+              <td>Server</td>
+              <td>Uvicorn</td>
+              <td>0.24.0</td>
+              <td>ASGI server</td>
+            </tr>
+            <tr>
+              <td>ORM</td>
+              <td>SQLAlchemy</td>
+              <td>2.0.23</td>
+              <td>Database ORM</td>
+            </tr>
+            <tr>
+              <td>Validation</td>
+              <td>Pydantic</td>
+              <td>2.5.2</td>
+              <td>Data validation and serialization</td>
+            </tr>
+            <tr>
+              <td>Authentication</td>
+              <td>python-jose</td>
+              <td>3.3.0</td>
+              <td>JWT token handling</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="system-components">
+        <h2>System Components</h2>
+
+        <h3>1. Frontend Components</h3>
+        <h4>Core Components</h4>
+        <pre><code>src/
+├── app/                    # Next.js 13+ App Router
+│   ├── layout.tsx         # Root layout with navigation
+│   ├── page.tsx           # Landing page
+│   ├── auth/              # Authentication pages
+│   ├── dashboard/         # User dashboard
+│   ├── models/            # Model browsing and details
+│   └── deployments/       # Deployment management
+├── components/
+│   ├── Navigation.tsx     # Main navigation bar
+│   ├── ThemeToggle.tsx    # Dark/light mode toggle
+│   └── ui/                # Reusable UI components
+└── lib/
+    ├── api.ts            # API client and type definitions
+    └── utils.ts          # Utility functions</code></pre>
+
+        <h3>2. Backend Components</h3>
+        <h4>Application Structure</h4>
+        <pre><code>app/
+├── main.py               # FastAPI application entry point
+├── core/
+│   ├── config.py        # Application configuration
+│   ├── database.py      # Database connection management
+│   └── security.py      # Authentication utilities
+├── api/
+│   └── v1/
+│       ├── auth.py      # Authentication endpoints
+│       ├── users.py     # User management endpoints
+│       ├── models.py    # Model management endpoints
+│       └── deployments.py # Deployment endpoints
+├── models/              # SQLAlchemy database models
+├── schemas/             # Pydantic schemas for API
+└── services/            # Business logic services</code></pre>
+      </section>
+
+      <section id="data-models-database-design">
+        <h2>Data Models & Database Design</h2>
+
+        <h3>Entity Relationship Diagram</h3>
+        <pre><code>┌─────────────┐         ┌─────────────┐         ┌─────────────┐
+│    User     │         │    Model    │         │ ModelVersion│
+├─────────────┤         ├─────────────┤         ├─────────────┤
+│ id (PK)     │────────┬│ id (PK)     │────────┬│ id (PK)     │
+│ email       │        ││ name        │        ││ version     │
+│ username    │        ││ description │        ││ changelog   │
+│ full_name   │        ││ framework   │        ││ s3_path     │
+│ password    │        ││ owner_id(FK)│        ││ model_id(FK)│
+│ is_active   │        │└─────────────┘        │└─────────────┘
+│ created_at  │        │                       │
+└─────────────┘        │                       │
+                       │ ┌─────────────────────┐│
+                       └─│  ModelDeployment    ││
+                         ├─────────────────────┤│
+                         │ id (PK)             ││
+                         │ name                ││
+                         │ model_id (FK)       │┘
+                         │ model_version_id(FK)│
+                         │ deployment_type     │
+                         │ status              │
+                         │ endpoint_url        │
+                         └─────────────────────┘</code></pre>
+
+        <h3>Database Models</h3>
+        <h4>User Model</h4>
+        <pre><code>class User(SQLAlchemyBaseUserTable):
+    id: int (Primary Key)
+    email: str (Unique, Index)
+    username: str (Unique, Index)
+    full_name: str
+    hashed_password: str
+    is_active: bool = True
+    is_superuser: bool = False
+    created_at: datetime
+    updated_at: datetime</code></pre>
+
+        <h4>Model Entity</h4>
+        <pre><code>class Model(Base):
+    id: int (Primary Key)
+    name: str (Index)
+    description: str
+    framework: str
+    model_type: str
+    tags: JSON
+    is_public: bool = True
+    download_count: int = 0
+    owner_id: int (Foreign Key -> User.id)
+    created_at: datetime
+    updated_at: datetime</code></pre>
+
+        <h4>Model Deployment</h4>
+        <pre><code>class ModelDeployment(Base):
+    id: int (Primary Key)
+    name: str
+    model_id: int (Foreign Key -> Model.id)
+    model_version_id: int (Foreign Key -> ModelVersion.id)
+    deployment_type: str
+    status: str
+    endpoint_url: str
+    created_at: datetime
+    updated_at: datetime</code></pre>
+      </section>
+
+      <section id="api-design">
+        <h2>API Design</h2>
+
+        <h3>RESTful API Structure</h3>
+        <p>
+          The API follows REST principles with consistent resource naming and
+          HTTP methods:
+        </p>
+        <pre><code>/api/v1/
+├── auth/
+│   ├── POST /token          # Login (OAuth2 compatible)
+│   ├── POST /register       # User registration
+│   └── POST /refresh        # Token refresh
+├── users/
+│   ├── GET /me              # Current user profile
+│   ├── PUT /me              # Update profile
+│   └── GET /{id}            # User details (public)
+├── models/
+│   ├── GET /                # List models (with filters)
+│   ├── POST /               # Upload new model
+│   ├── GET /{id}            # Model details
+│   ├── PUT /{id}            # Update model
+│   ├── DELETE /{id}         # Delete model
+│   └── POST /{id}/download  # Download model
+└── deployments/
+    ├── GET /                # List deployments
+    ├── POST /               # Create deployment
+    ├── GET /{id}            # Deployment details
+    ├── PUT /{id}            # Update deployment
+    ├── DELETE /{id}         # Delete deployment
+    └── GET /{id}/logs       # Deployment logs</code></pre>
+
+        <h3>Authentication</h3>
+        <p>The API uses OAuth2 with JWT tokens for authentication:</p>
+        <pre><code># Login Request
+POST /api/v1/auth/token
+Content-Type: application/x-www-form-urlencoded
+
+username=user@example.com&password=secret
+
+# Response
+{
+  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGc...",
+  "token_type": "bearer",
+  "expires_in": 3600
+}</code></pre>
+
+        <h3>Error Handling</h3>
+        <p>Consistent error responses across all endpoints:</p>
+        <pre><code>{
+  "detail": "Error message",
+  "status_code": 400,
+  "timestamp": "2024-01-01T12:00:00Z",
+  "path": "/api/v1/models/123"
+}</code></pre>
+      </section>
+
+      <section id="frontend-architecture">
+        <h2>Frontend Architecture</h2>
+
+        <h3>Next.js App Router Structure</h3>
+        <p>
+          The frontend uses Next.js 13+ App Router for enhanced performance and
+          developer experience:
+        </p>
+
+        <h4>Page Organization</h4>
+        <pre><code>src/app/
+├── layout.tsx              # Root layout (navigation, providers)
+├── page.tsx               # Landing page
+├── loading.tsx            # Global loading UI
+├── error.tsx              # Global error boundary
+├── not-found.tsx          # 404 page
+├── auth/
+│   ├── login/page.tsx     # Login page
+│   └── register/page.tsx  # Registration page
+├── dashboard/
+│   ├── page.tsx           # User dashboard
+│   ├── layout.tsx         # Dashboard layout
+│   └── loading.tsx        # Dashboard loading
+├── models/
+│   ├── page.tsx           # Model listing
+│   ├── [id]/page.tsx      # Model details
+│   └── upload/page.tsx    # Model upload
+└── deployments/
+    ├── page.tsx           # Deployment listing
+    └── [id]/page.tsx      # Deployment details</code></pre>
+
+        <h3>State Management</h3>
+        <ul>
+          <li>
+            <strong>React Context</strong>: Authentication state and user data
+          </li>
+          <li>
+            <strong>React Query</strong>: Server state management and caching
+          </li>
+          <li>
+            <strong>Local State</strong>: Component-specific state with
+            useState/useReducer
+          </li>
+        </ul>
+
+        <h3>UI Component Architecture</h3>
+        <pre><code>src/components/
+├── ui/                    # Base UI components (shadcn/ui)
+│   ├── Button.tsx
+│   ├── Input.tsx
+│   ├── Dialog.tsx
+│   └── Table.tsx
+├── forms/                 # Form components
+│   ├── LoginForm.tsx
+│   ├── ModelUploadForm.tsx
+│   └── DeploymentForm.tsx
+├── layout/                # Layout components
+│   ├── Navigation.tsx
+│   ├── Sidebar.tsx
+│   └── Footer.tsx
+└── features/              # Feature-specific components
+    ├── ModelCard.tsx
+    ├── DeploymentStatus.tsx
+    └── UserProfile.tsx</code></pre>
+      </section>
+
+      <section id="security-architecture">
+        <h2>Security Architecture</h2>
+
+        <h3>Authentication & Authorization</h3>
+        <ul>
+          <li>
+            <strong>JWT Tokens</strong>: Stateless authentication with
+            configurable expiration
+          </li>
+          <li>
+            <strong>Refresh Tokens</strong>: Secure token renewal mechanism
+          </li>
+          <li><strong>Role-based Access</strong>: User and superuser roles</li>
+          <li>
+            <strong>Resource Ownership</strong>: Users can only modify their own
+            resources
+          </li>
+        </ul>
+
+        <h3>Data Validation</h3>
+        <ul>
+          <li>
+            <strong>Pydantic Schemas</strong>: Comprehensive input validation
+          </li>
+          <li>
+            <strong>File Upload Validation</strong>: Type and size restrictions
+          </li>
+          <li>
+            <strong>SQL Injection Protection</strong>: SQLAlchemy ORM
+            parameterized queries
+          </li>
+        </ul>
+
+        <h3>Security Headers</h3>
+        <pre><code># FastAPI Security Middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://yourdomain.com"],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["*"],
+)
+
+# Security Headers
+- X-Content-Type-Options: nosniff
+- X-Frame-Options: DENY
+- X-XSS-Protection: 1; mode=block
+- Strict-Transport-Security: max-age=31536000</code></pre>
+
+        <h3>Environment Security</h3>
+        <ul>
+          <li>
+            <strong>Environment Variables</strong>: Sensitive data stored
+            securely
+          </li>
+          <li>
+            <strong>Secret Management</strong>: Platform-native secret storage
+          </li>
+          <li>
+            <strong>API Key Rotation</strong>: Regular rotation of service API
+            keys
+          </li>
+        </ul>
+      </section>
+
+      <section id="deployment-architecture">
+        <h2>Deployment Architecture</h2>
+
+        <h3>Multi-Environment Strategy</h3>
+        <pre><code>Development → Staging → Production
+     ↓           ↓         ↓
+  Local Dev   → Testing → Live Users</code></pre>
+
+        <h3>Container Strategy</h3>
+        <ul>
+          <li>
+            <strong>Development</strong>: Docker Compose for local multi-service
+            setup
+          </li>
+          <li>
+            <strong>Production</strong>: Railway/Render container platforms
+          </li>
+          <li>
+            <strong>Scaling</strong>: Horizontal pod autoscaling based on
+            CPU/memory
+          </li>
+        </ul>
+
+        <h3>Cloud Platform Architecture</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Platform</th>
+              <th>Purpose</th>
+              <th>Scaling</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Frontend</td>
+              <td>Vercel</td>
+              <td>Static site hosting with SSR</td>
+              <td>Edge functions, CDN</td>
+            </tr>
+            <tr>
+              <td>Backend API</td>
+              <td>Railway</td>
+              <td>Container hosting</td>
+              <td>Horizontal scaling</td>
+            </tr>
+            <tr>
+              <td>Database</td>
+              <td>Railway PostgreSQL</td>
+              <td>Managed database</td>
+              <td>Vertical scaling</td>
+            </tr>
+            <tr>
+              <td>File Storage</td>
+              <td>S3 Compatible</td>
+              <td>Model file storage</td>
+              <td>Unlimited</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Environment Configuration</h3>
+        <pre><code># Production Environment Variables
+DATABASE_URL=postgresql://...
+SECRET_KEY=super-secret-key
+CORS_ORIGINS=https://yourdomain.com
+S3_BUCKET_NAME=model-storage
+S3_ACCESS_KEY=...
+S3_SECRET_KEY=...
+S3_REGION=us-east-1</code></pre>
+      </section>
+
+      <section id="data-flow">
+        <h2>Data Flow</h2>
+
+        <h3>User Authentication Flow</h3>
+        <pre><code>1. User submits credentials
+2. Backend validates against database
+3. JWT token generated and returned
+4. Token stored in frontend
+5. Token included in subsequent requests
+6. Backend validates token for protected routes</code></pre>
+
+        <h3>Model Upload Flow</h3>
+        <pre><code>1. User selects model file
+2. Frontend validates file type/size
+3. File uploaded to backend
+4. Backend stores file and metadata
+5. Database record created
+6. Success response returned</code></pre>
+
+        <h3>Model Deployment Flow</h3>
+        <pre><code>1. User initiates deployment
+2. Backend creates deployment record
+3. Model files prepared for deployment
+4. Deployment platform API called
+5. Endpoint URL received and stored
+6. Deployment status updated</code></pre>
+
+        <h3>Real-time Updates</h3>
+        <ul>
+          <li>
+            <strong>Polling</strong>: Frontend polls for deployment status
+            updates
+          </li>
+          <li>
+            <strong>WebSockets</strong>: Real-time deployment logs (future
+            enhancement)
+          </li>
+          <li>
+            <strong>Webhooks</strong>: Platform notifications for deployment
+            events
+          </li>
+        </ul>
+      </section>
+
+      <section id="scalability-performance">
+        <h2>Scalability & Performance</h2>
+
+        <h3>Backend Scaling Strategy</h3>
+        <ul>
+          <li><strong>Stateless Design</strong>: No server-side sessions</li>
+          <li><strong>Load Balancing</strong>: Multiple backend instances</li>
+          <li>
+            <strong>Database Connection Pooling</strong>: Efficient connection
+            reuse
+          </li>
+          <li>
+            <strong>Async Processing</strong>: Non-blocking I/O operations
+          </li>
+        </ul>
+
+        <h3>Database Performance</h3>
+        <ul>
+          <li>
+            <strong>Optimized Indexes</strong>: Strategic indexing for common
+            queries
+          </li>
+          <li>
+            <strong>Query Optimization</strong>: Efficient SQLAlchemy queries
+          </li>
+          <li>
+            <strong>Connection Pooling</strong>: PostgreSQL connection
+            management
+          </li>
+          <li>
+            <strong>Read Replicas</strong>: Scale read operations (future)
+          </li>
+        </ul>
+
+        <h3>Frontend Performance</h3>
+        <ul>
+          <li>
+            <strong>Code Splitting</strong>: Route-based and component-level
+            splitting
+          </li>
+          <li><strong>Static Site Generation</strong>: Next.js optimization</li>
+          <li><strong>CDN Delivery</strong>: Vercel edge network</li>
+          <li>
+            <strong>Image Optimization</strong>: Automatic WebP conversion
+          </li>
+        </ul>
+
+        <h3>Caching Strategy</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Layer</th>
+              <th>Cache Type</th>
+              <th>TTL</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>CDN</td>
+              <td>Edge Cache</td>
+              <td>1 hour</td>
+              <td>Static assets</td>
+            </tr>
+            <tr>
+              <td>Frontend</td>
+              <td>React Query</td>
+              <td>5 minutes</td>
+              <td>API responses</td>
+            </tr>
+            <tr>
+              <td>Backend</td>
+              <td>Redis (future)</td>
+              <td>10 minutes</td>
+              <td>Database queries</td>
+            </tr>
+            <tr>
+              <td>Database</td>
+              <td>Query Cache</td>
+              <td>Automatic</td>
+              <td>Repeated queries</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="infrastructure-as-code">
+        <h2>Infrastructure as Code</h2>
+
+        <h3>Docker Configuration</h3>
+        <h4>Backend Dockerfile</h4>
+        <pre><code># Multi-stage build for optimization
+FROM python:3.11-slim as requirements-stage
+WORKDIR /tmp
+RUN pip install poetry
+COPY ./pyproject.toml ./poetry.lock* /tmp/
+RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
+
+FROM python:3.11-slim
+WORKDIR /app
+COPY --from=requirements-stage /tmp/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
+COPY ./app /app/app
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]</code></pre>
+
+        <h3>Docker Compose (Development)</h3>
+        <pre><code>version: '3.8'
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:pass@db:5432/modeldb
+    depends_on:
+      - db
+    volumes:
+      - ./backend:/app
+      
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    volumes:
+      - ./frontend:/app
+      
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: modeldb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:</code></pre>
+
+        <h3>Deployment Scripts</h3>
+        <ul>
+          <li>
+            <strong>Automated Deployment</strong>: Railway and Vercel
+            integration
+          </li>
+          <li>
+            <strong>Environment Management</strong>: Configuration via
+            environment variables
+          </li>
+          <li>
+            <strong>Database Migrations</strong>: Alembic migration workflow
+          </li>
+          <li><strong>Health Checks</strong>: Container health monitoring</li>
+        </ul>
+      </section>
+
+      <section id="monitoring-observability">
+        <h2>Monitoring & Observability</h2>
+
+        <h3>Logging Strategy</h3>
+        <ul>
+          <li>
+            <strong>Structured Logging</strong>: JSON format for easy parsing
+          </li>
+          <li><strong>Log Levels</strong>: ERROR, WARN, INFO, DEBUG</li>
+          <li>
+            <strong>Centralized Logging</strong>: Platform-native log
+            aggregation
+          </li>
+          <li>
+            <strong>Request Tracing</strong>: Correlation IDs for request
+            tracking
+          </li>
+        </ul>
+
+        <h3>Health Checks</h3>
+        <pre><code># Health Check Endpoint
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "healthy",
+        "timestamp": datetime.utcnow(),
+        "version": "1.0.0",
+        "database": await check_database_connection(),
+        "storage": await check_storage_connection()
+    }</code></pre>
+
+        <h3>Performance Metrics</h3>
+        <ul>
+          <li><strong>Response Time</strong>: API endpoint performance</li>
+          <li><strong>Error Rates</strong>: HTTP error status tracking</li>
+          <li>
+            <strong>Resource Usage</strong>: CPU, memory, disk utilization
+          </li>
+          <li>
+            <strong>Business Metrics</strong>: Model uploads, downloads,
+            deployments
+          </li>
+        </ul>
+
+        <h3>Alerting</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Threshold</th>
+              <th>Action</th>
+              <th>Priority</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Error Rate</td>
+              <td>&gt; 5%</td>
+              <td>Email Alert</td>
+              <td>High</td>
+            </tr>
+            <tr>
+              <td>Response Time</td>
+              <td>&gt; 2s</td>
+              <td>Slack Alert</td>
+              <td>Medium</td>
+            </tr>
+            <tr>
+              <td>CPU Usage</td>
+              <td>&gt; 80%</td>
+              <td>Scale Up</td>
+              <td>Medium</td>
+            </tr>
+            <tr>
+              <td>Database Connections</td>
+              <td>&gt; 90%</td>
+              <td>Email Alert</td>
+              <td>High</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="cicd-pipeline">
+        <h2>CI/CD Pipeline</h2>
+
+        <h3>GitHub Actions Workflow</h3>
+        <pre><code>name: CI/CD Pipeline
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run tests
+        run: pytest --cov=app --cov-report=xml
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy to Railway
+        run: railway deploy</code></pre>
+
+        <h3>Quality Gates</h3>
+        <ul>
+          <li>
+            <strong>All Tests Pass</strong>: Unit, integration, and E2E tests
+          </li>
+          <li>
+            <strong>Code Coverage</strong>: Backend (80%+), Frontend (70%+)
+          </li>
+          <li>
+            <strong>Security Scan</strong>: Dependency vulnerability assessment
+          </li>
+          <li>
+            <strong>Performance Tests</strong>: Load testing for production
+            releases
+          </li>
+        </ul>
+
+        <h3>Deployment Strategy</h3>
+        <ul>
+          <li>
+            <strong>Branch Protection</strong>: Main branch requires PR approval
+          </li>
+          <li>
+            <strong>Staging Environment</strong>: Automatic deployment from
+            develop branch
+          </li>
+          <li>
+            <strong>Production Deployment</strong>: Manual approval for main
+            branch
+          </li>
+          <li><strong>Rollback Strategy</strong>: Quick rollback capability</li>
+        </ul>
+
+        <h3>Testing Strategy</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Test Type</th>
+              <th>Framework</th>
+              <th>Coverage</th>
+              <th>Frequency</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Unit Tests</td>
+              <td>pytest</td>
+              <td>80%+</td>
+              <td>Every commit</td>
+            </tr>
+            <tr>
+              <td>Integration Tests</td>
+              <td>pytest + TestClient</td>
+              <td>60%+</td>
+              <td>Every PR</td>
+            </tr>
+            <tr>
+              <td>E2E Tests</td>
+              <td>Playwright</td>
+              <td>Critical paths</td>
+              <td>Before release</td>
+            </tr>
+            <tr>
+              <td>Load Tests</td>
+              <td>Locust</td>
+              <td>API endpoints</td>
+              <td>Weekly</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+
+    <div class="footer">
+      <p>
+        © 2024 Deep Learning Model Hub. Built with FastAPI, Next.js, and
+        deployed on Railway & Vercel.
+      </p>
+      <p>Generated: <span id="timestamp"></span></p>
+    </div>
+
+    <a
+      href="#"
+      class="back-to-top"
+      onclick="window.scrollTo(0,0); return false;"
+      >↑ Top</a
+    >
+
+    <script>
+      // Set timestamp
+      document.getElementById("timestamp").textContent =
+        new Date().toLocaleString();
+
+      // Smooth scrolling for anchor links
+      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener("click", function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute("href"));
+          if (target) {
+            target.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+          }
+        });
+      });
+
+      // Show/hide back to top button
+      window.addEventListener("scroll", function () {
+        const backToTop = document.querySelector(".back-to-top");
+        if (window.pageYOffset > 300) {
+          backToTop.style.display = "block";
+        } else {
+          backToTop.style.display = "none";
+        }
+      });
+    </script>
+  </body>
+</html>
