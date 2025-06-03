@@ -59,7 +59,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const register = async (name: string, email: string, password: string) => {
-    const response = await apiClient.register(name, email, password);
+    const response = await apiClient.register({
+      username: name,
+      email,
+      password,
+    });
     // Token is stored by the API client
     const userData = await apiClient.getCurrentUser();
     setUser(userData);
