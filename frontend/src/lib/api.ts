@@ -326,6 +326,65 @@ export const apiClient = {
     const response = await api.get('/users/me')
     return response.data
   },
+
+  // Admin endpoints
+  admin: {
+    getUsers: async (params?: { role_filter?: string; active_only?: boolean }) => {
+      const response = await api.get('/admin/users', { params })
+      return response.data
+    },
+
+    updateUserRole: async (userId: number, role: string) => {
+      const response = await api.put(`/admin/users/${userId}/role`, { role })
+      return response.data
+    },
+
+    updateUserStatus: async (userId: number, is_active: boolean, reason?: string) => {
+      const response = await api.put(`/admin/users/${userId}/status`, { is_active, reason })
+      return response.data
+    },
+
+    getPendingModels: async () => {
+      const response = await api.get('/admin/models/pending')
+      return response.data
+    },
+
+    approveModel: async (model_id: number, action: string, notes?: string) => {
+      const response = await api.post('/admin/models/approve', { model_id, action, notes })
+      return response.data
+    },
+
+    getDashboard: async () => {
+      const response = await api.get('/admin/analytics/dashboard')
+      return response.data
+    },
+
+    emergencyAction: async (action: string, target_id: number, reason: string, duration_hours?: number) => {
+      const response = await api.post('/admin/emergency', { action, target_id, reason, duration_hours })
+      return response.data
+    },
+  },
+
+  // Generic HTTP methods for admin components compatibility
+  get: async (url: string, config?: any) => {
+    const response = await api.get(url, config)
+    return response
+  },
+
+  post: async (url: string, data?: any, config?: any) => {
+    const response = await api.post(url, data, config)
+    return response
+  },
+
+  put: async (url: string, data?: any, config?: any) => {
+    const response = await api.put(url, data, config)
+    return response
+  },
+
+  delete: async (url: string, config?: any) => {
+    const response = await api.delete(url, config)
+    return response
+  },
 }
 
 export default apiClient 
