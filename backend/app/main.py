@@ -159,15 +159,33 @@ async def startup_event():
         from app.models.analytics import PlatformAnalytics, UserActivity, ModelActivity
         from app.core.security import get_password_hash
         from sqlalchemy.orm import Session
+        from sqlalchemy import text
 
         print("Initializing database...")
 
         # Import all models to ensure they're registered with Base
         print("Importing all models...")
 
+        # Force import all models to register them with Base
+        print(f"User model: {User}")
+        print(f"Model model: {Model}")
+        print(f"ModelVersion model: {ModelVersion}")
+        print(f"Analytics models: {PlatformAnalytics}, {UserActivity}, {ModelActivity}")
+
         # Create all tables
+        print("Creating database tables...")
         Base.metadata.create_all(bind=engine)
         print("✅ Database tables created successfully!")
+
+        # Verify tables were created
+        with engine.connect() as conn:
+            result = conn.execute(
+                text(
+                    "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
+                )
+            )
+            tables = [row[0] for row in result]
+            print(f"Created tables: {tables}")
 
         # Create admin user if it doesn't exist
         db = Session(bind=engine)
