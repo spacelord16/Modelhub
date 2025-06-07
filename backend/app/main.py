@@ -131,6 +131,77 @@ async def debug_db():
         }
 
 
+# Manual database initialization endpoint
+@app.post("/debug/init-db")
+async def init_database():
+    try:
+        from app.core.database import engine, Base, SessionLocal
+        from app.models.user import User, UserRole
+        from app.models.model import Model, ModelVersion
+        from app.models.deployment import ModelDeployment, DeploymentLog
+        from app.models.analytics import PlatformAnalytics, UserActivity, ModelActivity
+        from app.core.security import get_password_hash
+        from sqlalchemy import text
+
+        # Import all models to ensure they're registered
+        print("Force importing all models...")
+
+        # Create all tables
+        print("Creating all tables...")
+        Base.metadata.create_all(bind=engine)
+
+        # Verify tables were created
+        with engine.connect() as conn:
+            result = conn.execute(
+                text(
+                    "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
+                )
+            )
+            tables = [row[0] for row in result]
+
+        # Create admin user
+        db = SessionLocal()
+        try:
+            admin_user = (
+                db.query(User).filter(User.email == "admin@example.com").first()
+            )
+            if not admin_user:
+                admin_user = User(
+                    email="admin@example.com",
+                    username="admin",
+                    full_name="Admin User",
+                    hashed_password=get_password_hash("admin"),
+                    is_superuser=True,
+                    is_active=True,
+                    role=UserRole.SUPER_ADMIN,
+                    login_count=0,
+                )
+                db.add(admin_user)
+                db.commit()
+                admin_created = True
+            else:
+                admin_created = False
+        except Exception as e:
+            db.rollback()
+            admin_created = f"Error: {e}"
+        finally:
+            db.close()
+
+        return {
+            "success": True,
+            "tables_created": tables,
+            "admin_user_created": admin_created,
+            "message": "Database initialized successfully",
+        }
+
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "Database initialization failed",
+        }
+
+
 # CORS test endpoint
 @app.options("/api/v1/auth/token")
 async def cors_test():
