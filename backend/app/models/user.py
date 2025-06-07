@@ -29,7 +29,9 @@ class User(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Relationships
-    models = relationship("Model", back_populates="owner")
+    models = relationship(
+        "Model", back_populates="owner", foreign_keys="Model.owner_id"
+    )
 
     def __repr__(self):
         return f"<User {self.username}>"
