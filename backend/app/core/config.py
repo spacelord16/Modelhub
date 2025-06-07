@@ -32,9 +32,11 @@ class Settings(BaseSettings):
     )
 
     # Database
-    USE_SQLITE: bool = (
-        os.getenv("USE_SQLITE", "true").lower() == "true"
-    )  # Check env var properly
+    USE_SQLITE: bool = os.getenv(
+        "USE_SQLITE", "true"
+    ).lower() == "true" and not os.getenv(
+        "DATABASE_URL"
+    )  # Use SQLite only if DATABASE_URL is not provided
     POSTGRES_SERVER: str = os.getenv("POSTGRES_SERVER", "localhost")
     POSTGRES_USER: str = os.getenv("POSTGRES_USER", "postgres")
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "postgres")
@@ -67,6 +69,9 @@ class Settings(BaseSettings):
         # Use DATABASE_URL if available (Railway standard), otherwise construct from components
         database_url = os.getenv("DATABASE_URL")
         if database_url:
+            # Convert postgres:// to postgresql:// if needed (Railway compatibility)
+            if database_url.startswith("postgres://"):
+                database_url = database_url.replace("postgres://", "postgresql://", 1)
             self.SQLALCHEMY_DATABASE_URI = database_url
         else:
             self.SQLALCHEMY_DATABASE_URI = (

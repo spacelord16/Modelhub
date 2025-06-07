@@ -110,13 +110,17 @@ async def startup_event():
     """Initialize database on startup"""
     try:
         from app.core.database import engine, Base
-        from app.models.user import User
+        from app.models.user import User, UserRole
         from app.models.model import Model, ModelVersion
         from app.models.deployment import ModelDeployment, DeploymentLog
+        from app.models.analytics import PlatformAnalytics, UserActivity, ModelActivity
         from app.core.security import get_password_hash
         from sqlalchemy.orm import Session
 
         print("Initializing database...")
+
+        # Import all models to ensure they're registered with Base
+        print("Importing all models...")
 
         # Create all tables
         Base.metadata.create_all(bind=engine)
