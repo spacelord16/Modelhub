@@ -202,6 +202,62 @@ async def init_database():
         }
 
 
+# Manual column addition endpoint
+@app.post("/debug/add-columns")
+async def add_missing_columns():
+    try:
+        from app.core.database import engine
+        from sqlalchemy import text
+
+        results = []
+
+        with engine.connect() as conn:
+            # Add missing columns to users table
+            try:
+                conn.execute(
+                    text("ALTER TABLE users ADD COLUMN role VARCHAR DEFAULT 'USER'")
+                )
+                conn.execute(text("ALTER TABLE users ADD COLUMN last_login TIMESTAMP"))
+                conn.execute(
+                    text("ALTER TABLE users ADD COLUMN login_count INTEGER DEFAULT 0")
+                )
+                conn.commit()
+                results.append("Added columns to users table")
+            except Exception as e:
+                results.append(f"Users table columns: {str(e)}")
+
+            # Add missing columns to models table
+            try:
+                conn.execute(
+                    text(
+                        "ALTER TABLE models ADD COLUMN status VARCHAR DEFAULT 'PENDING'"
+                    )
+                )
+                conn.execute(
+                    text(
+                        "ALTER TABLE models ADD COLUMN deployment_status VARCHAR DEFAULT 'INACTIVE'"
+                    )
+                )
+                conn.execute(text("ALTER TABLE models ADD COLUMN reviewed_by INTEGER"))
+                conn.execute(
+                    text("ALTER TABLE models ADD COLUMN reviewed_at TIMESTAMP")
+                )
+                conn.execute(text("ALTER TABLE models ADD COLUMN review_notes TEXT"))
+                conn.commit()
+                results.append("Added columns to models table")
+            except Exception as e:
+                results.append(f"Models table columns: {str(e)}")
+
+        return {
+            "success": True,
+            "results": results,
+            "message": "Column addition completed",
+        }
+
+    except Exception as e:
+        return {"success": False, "error": str(e), "message": "Column addition failed"}
+
+
 # CORS test endpoint
 @app.options("/api/v1/auth/token")
 async def cors_test():
