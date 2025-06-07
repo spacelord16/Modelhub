@@ -76,7 +76,7 @@ class Model(Base):
 
     # Relationships
     owner_id = Column(Integer, ForeignKey("users.id"))
-    owner = relationship("User", back_populates="models")
+    owner = relationship("User", back_populates="models", foreign_keys=[owner_id])
     reviewer = relationship("User", foreign_keys=[reviewed_by])
     versions = relationship(
         "ModelVersion", back_populates="model", cascade="all, delete-orphan"
