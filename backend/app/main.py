@@ -88,6 +88,49 @@ async def health_check():
     }
 
 
+# Debug endpoint to check database status
+@app.get("/debug/db")
+async def debug_db():
+    try:
+        from app.core.database import engine, SessionLocal
+        from app.models.user import User
+        from sqlalchemy import text
+
+        # Test basic connection
+        with engine.connect() as conn:
+            result = conn.execute(text("SELECT 1"))
+            db_connected = True
+
+        # Test tables exist
+        db = SessionLocal()
+        try:
+            user_count = db.query(User).count()
+            tables_exist = True
+        except Exception as table_error:
+            user_count = 0
+            tables_exist = False
+        finally:
+            db.close()
+
+        return {
+            "database_connected": db_connected,
+            "tables_exist": tables_exist,
+            "user_count": user_count,
+            "database_url": (
+                settings.SQLALCHEMY_DATABASE_URI[:50] + "..."
+                if settings.SQLALCHEMY_DATABASE_URI
+                else None
+            ),
+            "use_sqlite": settings.USE_SQLITE,
+        }
+    except Exception as e:
+        return {
+            "error": str(e),
+            "database_connected": False,
+            "tables_exist": False,
+        }
+
+
 # CORS test endpoint
 @app.options("/api/v1/auth/token")
 async def cors_test():
