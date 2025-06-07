@@ -1,7 +1,31 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, JSON, Text
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    Float,
+    DateTime,
+    ForeignKey,
+    JSON,
+    Text,
+    Enum,
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
+import enum
+
+
+class ModelStatus(enum.Enum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    SUSPENDED = "suspended"
+
+
+class DeploymentStatus(enum.Enum):
+    INACTIVE = "inactive"
+    ACTIVE = "active"
+    EMERGENCY_DISABLED = "emergency_disabled"
 
 
 class ModelVersion(Base):
@@ -41,9 +65,19 @@ class Model(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
+    # Admin/Approval workflow fields
+    status = Column(Enum(ModelStatus), default=ModelStatus.PENDING)
+    deployment_status = Column(
+        Enum(DeploymentStatus), default=DeploymentStatus.INACTIVE
+    )
+    reviewed_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    reviewed_at = Column(DateTime(timezone=True), nullable=True)
+    review_notes = Column(Text, nullable=True)
+
     # Relationships
     owner_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", back_populates="models")
+    reviewer = relationship("User", foreign_keys=[reviewed_by])
     versions = relationship(
         "ModelVersion", back_populates="model", cascade="all, delete-orphan"
     )

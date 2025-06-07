@@ -8,7 +8,7 @@ from passlib.context import CryptContext
 
 # Create SQLite database directory if it doesn't exist
 os.makedirs("sqlite_db", exist_ok=True)
-db_path = "sqlite_db/model_hub.db"
+db_path = "sqlite_db/app.db"  # Updated to use the correct database name
 
 # Create the database tables if they don't exist
 conn = sqlite3.connect(db_path)
@@ -25,6 +25,9 @@ CREATE TABLE IF NOT EXISTS users (
     hashed_password TEXT NOT NULL,
     is_active BOOLEAN DEFAULT 1,
     is_superuser BOOLEAN DEFAULT 0,
+    role TEXT DEFAULT 'USER',
+    last_login TIMESTAMP,
+    login_count INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP
 )
@@ -45,7 +48,7 @@ if admin:
     cursor.execute(
         """
     UPDATE users 
-    SET username = 'admin', hashed_password = ?, is_superuser = 1, is_active = 1
+    SET username = 'admin', hashed_password = ?, is_superuser = 1, is_active = 1, role = 'SUPER_ADMIN'
     WHERE email = 'admin@example.com'
     """,
         (hashed_password,),
@@ -57,10 +60,19 @@ else:
     hashed_password = pwd_context.hash("admin")
     cursor.execute(
         """
-    INSERT INTO users (email, username, full_name, hashed_password, is_superuser, is_active)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO users (email, username, full_name, hashed_password, is_superuser, is_active, role, login_count)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """,
-        ("admin@example.com", "admin", "Admin User", hashed_password, 1, 1),
+        (
+            "admin@example.com",
+            "admin",
+            "Admin User",
+            hashed_password,
+            1,
+            1,
+            "SUPER_ADMIN",
+            0,
+        ),
     )
     conn.commit()
     print("Admin user created: admin@example.com / admin / admin")
@@ -72,3 +84,4 @@ print("\nDone! You should now be able to log in with:")
 print("Email: admin@example.com")
 print("Username: admin")
 print("Password: admin")
+print("Role: SUPER_ADMIN")

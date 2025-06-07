@@ -14,6 +14,9 @@ interface User {
   id: number;
   email: string;
   full_name: string;
+  username?: string;
+  role?: "USER" | "MODERATOR" | "ADMIN" | "SUPER_ADMIN";
+  is_active?: boolean;
 }
 
 interface AuthContextType {

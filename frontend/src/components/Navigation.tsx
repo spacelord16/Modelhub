@@ -3,9 +3,17 @@
 import Link from "next/link";
 import ThemeToggle from "./ThemeToggle";
 import { useAuth } from "../contexts/AuthContext";
+import { Shield } from "lucide-react";
 
 export default function Navigation() {
   const { user, logout, loading } = useAuth();
+
+  // Check if user has admin privileges
+  const isAdmin =
+    user &&
+    (user.role === "ADMIN" ||
+      user.role === "SUPER_ADMIN" ||
+      user.role === "MODERATOR");
 
   return (
     <nav className="bg-white dark:bg-gray-900 shadow-md">
@@ -45,6 +53,15 @@ export default function Navigation() {
               >
                 Dashboard
               </Link>
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className="inline-flex items-center px-1 pt-1 text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300"
+                >
+                  <Shield className="h-4 w-4 mr-1" />
+                  Admin
+                </Link>
+              )}
             </div>
           </div>
           <div className="hidden sm:ml-6 sm:flex sm:items-center space-x-4">
@@ -55,6 +72,11 @@ export default function Navigation() {
                   <div className="flex items-center space-x-4">
                     <span className="text-sm text-gray-700 dark:text-gray-300">
                       {user.full_name}
+                      {isAdmin && (
+                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                          {user.role}
+                        </span>
+                      )}
                     </span>
                     <button
                       onClick={logout}
