@@ -131,6 +131,8 @@ async def startup_event():
 
             if not admin_user:
                 print("🔧 Creating admin user...")
+                from app.models.user import UserRole
+
                 admin_user = User(
                     email="admin@example.com",
                     username="admin",
@@ -138,16 +140,18 @@ async def startup_event():
                     hashed_password=get_password_hash("admin"),
                     is_superuser=True,
                     is_active=True,
+                    role=UserRole.SUPER_ADMIN,
+                    login_count=0,
                 )
                 db.add(admin_user)
                 db.commit()
-                print("Admin user created successfully!")
+                print("✅ Admin user created successfully!")
                 print("Admin login: admin@example.com / admin / admin")
             else:
                 print("Admin user already exists")
 
         except Exception as e:
-            print(f"Error creating admin user: {e}")
+            print(f"❌ Error creating admin user: {e}")
             db.rollback()
         finally:
             db.close()
