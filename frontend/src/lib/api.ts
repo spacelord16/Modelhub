@@ -128,7 +128,7 @@ export const apiClient = {
     if (filters?.task_type) params.append('task_type', filters.task_type)
     if (filters?.framework) params.append('framework', filters.framework)
     
-    const response = await api.get<Model[]>('/models', { params })
+    const response = await api.get<Model[]>('/models/', { params })
     return response.data
   },
 
@@ -138,7 +138,7 @@ export const apiClient = {
   },
 
   uploadModel: async (formData: FormData) => {
-    const response = await api.post<Model>('/models', formData, {
+    const response = await api.post<Model>('/models/', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
