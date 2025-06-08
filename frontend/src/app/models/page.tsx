@@ -51,9 +51,36 @@ export default function ModelsPage() {
           >
             <h2 className="text-xl font-semibold mb-2">{model.name}</h2>
             <p className="text-gray-600 mb-4">{model.description}</p>
-            <div className="flex justify-between text-sm text-gray-500">
+            <div className="space-y-2 mb-4">
+              <div className="flex flex-wrap gap-1">
+                {model.tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+              {model.versions[0]?.model_metadata?.accuracy && (
+                <div className="bg-green-50 text-green-800 text-sm px-3 py-1 rounded">
+                  Accuracy:{" "}
+                  {(model.versions[0].model_metadata.accuracy * 100).toFixed(1)}
+                  %
+                </div>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-4 text-sm text-gray-500 mb-4">
               <span>Framework: {model.framework}</span>
-              <span>Version: {model.version}</span>
+              <span>Task: {model.task_type}</span>
+              <span>Version: {model.current_version}</span>
+              <span>Size: {model.versions[0]?.size_mb.toFixed(2)} MB</span>
+            </div>
+            <div className="flex justify-between text-sm text-gray-400">
+              <span>{model.downloads} downloads</span>
+              <span>
+                ★ {model.average_rating.toFixed(1)} ({model.likes} likes)
+              </span>
             </div>
           </div>
         ))}

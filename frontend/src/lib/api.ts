@@ -20,27 +20,37 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+export interface ModelVersion {
+  id: number
+  model_id: number
+  version: string
+  changelog: string
+  format: string
+  model_metadata?: Record<string, any>
+  performance_metrics?: Record<string, any>
+  s3_path: string
+  size_mb: number
+  created_at: string
+}
+
 export interface Model {
   id: number
   name: string
   description: string
   framework: string
-  version: string
-  format: string
   task_type: string
   tags: string[]
   license: string
   paper_url?: string
   github_url?: string
-  model_metadata?: Record<string, any>
-  size_mb: number
   downloads: number
   likes: number
   average_rating: number
   created_at: string
   updated_at?: string
   owner_id: number
-  performance_metrics?: Record<string, any>
+  current_version: string
+  versions: ModelVersion[]
 }
 
 export interface ModelCreate {
