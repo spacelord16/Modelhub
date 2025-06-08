@@ -234,7 +234,8 @@ export default function CreateDeploymentPage() {
                       <option value="">Select a model</option>
                       {models.map((model) => (
                         <option key={model.id} value={model.id}>
-                          {model.name} ({model.framework}) - v{model.version}
+                          {model.name} ({model.framework}) - v
+                          {model.current_version}
                         </option>
                       ))}
                     </select>
