@@ -8,9 +8,11 @@ from fastapi import (
     Query,
     Body,
 )
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 import json
+import os
 
 from app.api.deps import get_db, get_current_active_user
 from app.services.model import (
@@ -22,6 +24,7 @@ from app.services.model import (
     delete_model,
     get_model_version,
     update_version_metrics,
+    increment_downloads,
 )
 from app.models.user import User
 from app.schemas.model import (
@@ -32,6 +35,7 @@ from app.schemas.model import (
     ModelVersionCreate,
 )
 from app.utils.storage import save_uploaded_file, get_download_url
+from app.core.config import settings
 
 router = APIRouter()
 
@@ -256,3 +260,60 @@ def read_user_models(
     """Get all models belonging to a user"""
     models = get_models(db=db, skip=skip, limit=limit, owner_id=user_id)
     return models
+
+
+@router.get("/{model_id}/download")
+def download_model(
+    model_id: int,
+    version: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    """Download a model file"""
+    # Get the model
+    db_model = get_model(db=db, model_id=model_id)
+    if db_model is None:
+        raise HTTPException(status_code=404, detail="Model not found")
+
+    # Get the specific version or current version
+    target_version = version or db_model.current_version
+    db_version = get_model_version(db, model_id, target_version)
+    if not db_version:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Version {target_version} not found for model {model_id}",
+        )
+
+    # Construct file path from s3_path
+    # s3_path format: "models/{user_id}/{filename}"
+    file_path = os.path.join(
+        settings.UPLOAD_DIR, db_version.s3_path.replace("models/", "")
+    )
+
+    # Check if file exists
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="Model file not found on server")
+
+    # Increment download count
+    increment_downloads(db, model_id)
+
+    # Return file for download
+    filename = (
+        f"{db_model.name.replace(' ', '_')}_v{target_version}.{db_version.format}"
+    )
+    return FileResponse(
+        path=file_path, filename=filename, media_type="application/octet-stream"
+    )
+
+
+@router.get("/{model_id}/versions/{version}/download")
+def download_model_version(
+    model_id: int,
+    version: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    """Download a specific version of a model"""
+    return download_model(
+        model_id=model_id, version=version, db=db, current_user=current_user
+    )
