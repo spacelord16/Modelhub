@@ -1,0 +1,25 @@
+{
+  "model_type": "RandomForestClassifier",
+  "framework": "scikit-learn",
+  "accuracy": 0.975,
+  "n_estimators": 100,
+  "max_depth": 10,
+  "features": 10,
+  "classes": 2,
+  "training_samples": 800,
+  "test_samples": 200,
+  "feature_names": [
+    "feature_0",
+    "feature_1",
+    "feature_2",
+    "feature_3",
+    "feature_4",
+    "feature_5",
+    "feature_6",
+    "feature_7",
+    "feature_8",
+    "feature_9"
+  ],
+  "description": "A simple Random Forest classifier trained on synthetic classification data for testing the Model Hub upload functionality.",
+  "use_case": "Binary classification example for demonstration purposes"
+}

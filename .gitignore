@@ -1,5 +1,6 @@
-/Users/spacelord/Documents/Personal/NewCo/backend/.env.example
+# ===============================
 # Python
+# ===============================
 __pycache__/
 *.py[cod]
 *$py.class
@@ -21,12 +22,17 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
+# Virtual Environments
 .env
 venv/
 .venv/
 ENV/
+env/
 
-# Node
+# ===============================
+# Node.js / Frontend
+# ===============================
 node_modules/
 npm-debug.log*
 yarn-debug.log*
@@ -35,14 +41,17 @@ yarn-error.log*
 .next/
 out/
 build/
-.DS_Store
 *.pem
+
+# Environment files
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# IDE
+# ===============================
+# IDE / Editor
+# ===============================
 .idea/
 .vscode/
 *.swp
@@ -51,6 +60,9 @@ build/
 .classpath
 .settings/
 
+# ===============================
+# Cloud / Deployment
+# ===============================
 # AWS
 .aws/
 *.pem
@@ -60,7 +72,9 @@ build/
 .docker/
 docker-compose.override.yml
 
+# ===============================
 # Testing
+# ===============================
 .coverage
 htmlcov/
 .pytest_cache/
@@ -70,15 +84,58 @@ coverage.xml
 *.cover
 .hypothesis/
 
+# ===============================
 # Logs
+# ===============================
 logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# ===============================
 # System Files
+# ===============================
 .DS_Store
-Thumbs.db backend/sqlite_db/*.db
+Thumbs.db
+*.bak
+*.tmp
+*~
+
+# ===============================
+# Database
+# ===============================
+*.db
+*.sqlite
+*.sqlite3
+backend/sqlite_db/*.db
+sqlite_db/*.db
+
+# ===============================
+# Uploads / Model Storage
+# ===============================
+uploads/
+backend/uploads/
+test_models/*.joblib
+test_models/*.pkl
+test_models/*.pth
+test_models/*.h5
+test_models/*.onnx
+
+# Keep test_models directory but ignore model files
+!test_models/.gitkeep
+
+# ===============================
+# Documentation / Generated Files
+# ===============================
 Deep_Learning_Model_Hub_System_Design.pdf
 Deep_Learning_Model_Hub_System_Design.html
+
+# ===============================
+# Migration Templates & Organization Setup (not for production)
+# ===============================
+github-org-templates/
+MIGRATION_CHECKLIST.md
+ORGANIZATION_SETUP.md
+MCP_QUICKSTART.md
+scripts/migrate-*.sh
