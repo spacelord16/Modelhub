@@ -14,7 +14,7 @@ from typing import List, Optional, Dict, Any
 import json
 import os
 
-from app.api.deps import get_db, get_current_active_user
+from app.api.deps import get_db, get_current_active_user, get_user_jwt_or_api_key
 from app.services.model import (
     get_model,
     get_models,
@@ -35,6 +35,7 @@ from app.schemas.model import (
     ModelVersionCreate,
 )
 from app.utils.storage import save_uploaded_file, get_download_url
+from app.utils.inference import get_model_file_path, load_model, run_inference
 from app.core.config import settings
 
 router = APIRouter()
@@ -265,15 +266,13 @@ def download_model(
     model_id: int,
     version: Optional[str] = None,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_user_jwt_or_api_key),  # JWT or API key
 ):
-    """Download a model file"""
-    # Get the model
+    """Download a model file. Accepts Bearer token or X-API-Key header."""
     db_model = get_model(db=db, model_id=model_id)
     if db_model is None:
         raise HTTPException(status_code=404, detail="Model not found")
 
-    # Get the specific version or current version
     target_version = version or db_model.current_version
     db_version = get_model_version(db, model_id, target_version)
     if not db_version:
@@ -282,26 +281,16 @@ def download_model(
             detail=f"Version {target_version} not found for model {model_id}",
         )
 
-    # Construct file path from s3_path
-    # s3_path format: "models/{user_id}/{filename}"
     file_path = os.path.join(
         settings.UPLOAD_DIR, db_version.s3_path.replace("models/", "")
     )
-
-    # Check if file exists
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="Model file not found on server")
 
-    # Increment download count
     increment_downloads(db, model_id)
 
-    # Return file for download
-    filename = (
-        f"{db_model.name.replace(' ', '_')}_v{target_version}.{db_version.format}"
-    )
-    return FileResponse(
-        path=file_path, filename=filename, media_type="application/octet-stream"
-    )
+    filename = f"{db_model.name.replace(' ', '_')}_v{target_version}.{db_version.format}"
+    return FileResponse(path=file_path, filename=filename, media_type="application/octet-stream")
 
 
 @router.get("/{model_id}/versions/{version}/download")
@@ -309,9 +298,50 @@ def download_model_version(
     model_id: int,
     version: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_user_jwt_or_api_key),
 ):
-    """Download a specific version of a model"""
-    return download_model(
-        model_id=model_id, version=version, db=db, current_user=current_user
-    )
+    """Download a specific version. Accepts Bearer token or X-API-Key header."""
+    return download_model(model_id=model_id, version=version, db=db, current_user=current_user)
+
+
+@router.post("/{model_id}/predict")
+def predict(
+    model_id: int,
+    input_data: Dict[str, Any] = Body(...),
+    version: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_user_jwt_or_api_key),  # JWT or API key
+):
+    """
+    Run inference on a model.
+
+    Body:
+        {"input": [[5.1, 3.5, 1.4, 0.2]]}   ← list of feature rows
+
+    Returns:
+        {"prediction": [0], "probabilities": [[0.97, 0.02, 0.01]]}
+
+    Auth: Bearer token OR X-API-Key header
+    """
+    db_model = get_model(db=db, model_id=model_id)
+    if db_model is None:
+        raise HTTPException(status_code=404, detail="Model not found")
+
+    target_version = version or db_model.current_version
+    db_version = get_model_version(db, model_id, target_version)
+    if not db_version:
+        raise HTTPException(status_code=404, detail=f"Version {target_version} not found")
+
+    # Resolve local file path
+    file_path = get_model_file_path(db_version.s3_path, settings.UPLOAD_DIR)
+
+    # Load and run the model
+    model = load_model(file_path, db_version.format)
+    raw_input = input_data.get("input")
+    if raw_input is None:
+        raise HTTPException(status_code=422, detail="Request body must have an 'input' key")
+
+    result = run_inference(model, raw_input, db_version.format)
+    result["model"] = db_model.name
+    result["version"] = target_version
+    return result
