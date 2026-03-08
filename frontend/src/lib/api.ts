@@ -78,27 +78,27 @@ export interface Deployment {
   status: string
   endpoint_url?: string
   error_message?: string
-  
+
   // Resource configuration
   cpu_limit: number
   memory_limit: number
   max_replicas: number
   min_replicas: number
-  
+
   // Configuration
   environment_vars: Record<string, string>
   health_check_path: string
-  
+
   // Auto-scaling
   auto_scale_enabled: boolean
   scale_up_threshold: number
   scale_down_threshold: number
-  
+
   // Timestamps
   created_at: string
   updated_at?: string
   deployed_at?: string
-  
+
   // Metrics
   request_count: number
   last_request_at?: string
@@ -137,7 +137,7 @@ export const apiClient = {
     const params = new URLSearchParams()
     if (filters?.task_type) params.append('task_type', filters.task_type)
     if (filters?.framework) params.append('framework', filters.framework)
-    
+
     const response = await api.get<Model[]>('/models/', { params })
     return response.data
   },
@@ -161,6 +161,12 @@ export const apiClient = {
     return response.data
   },
 
+  predictModel: async (id: number, input: any, version?: string) => {
+    const params = version ? { version } : {}
+    const response = await api.post(`/models/${id}/predict`, { input }, { params })
+    return response.data
+  },
+
   updateModelMetrics: async (id: number, metrics: Record<string, any>) => {
     const response = await api.post<Model>(`/models/${id}/metrics`, metrics)
     return response.data
@@ -176,18 +182,18 @@ export const apiClient = {
     const formData = new URLSearchParams()
     formData.append('username', username)
     formData.append('password', password)
-    
+
     const response = await api.post('/auth/token', formData, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
     })
-    
+
     // Store token in localStorage
     if (typeof window !== 'undefined') {
       localStorage.setItem('token', response.data.access_token)
     }
-    
+
     return response.data
   },
 
@@ -199,32 +205,32 @@ export const apiClient = {
     try {
       // Generate a username from the email (before the @) if not provided
       const username = userData.username || userData.email.split('@')[0];
-      
-      const response = await api.post('/auth/register', { 
+
+      const response = await api.post('/auth/register', {
         email: userData.email,
-        username, 
+        username,
         password: userData.password,
         full_name: userData.username // Use username as full_name for now
       })
-      
+
       // If registration is successful, automatically log in
-      const loginResponse = await api.post('/auth/token', 
+      const loginResponse = await api.post('/auth/token',
         new URLSearchParams({
           username: username, // Use the actual username, not email
           password: userData.password
-        }), 
+        }),
         {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
           },
         }
       );
-      
+
       // Store token in localStorage
       if (typeof window !== 'undefined') {
         localStorage.setItem('token', loginResponse.data.access_token)
       }
-      
+
       return response.data
     } catch (error: any) {
       if (error.response?.status === 400) {
@@ -247,8 +253,8 @@ export const apiClient = {
   },
 
   // Deployment endpoints
-  getDeployments: async (filters?: { 
-    status?: string 
+  getDeployments: async (filters?: {
+    status?: string
     skip?: number
     limit?: number
   }) => {
@@ -256,7 +262,7 @@ export const apiClient = {
     if (filters?.status) params.append('status', filters.status)
     if (filters?.skip) params.append('skip', filters.skip.toString())
     if (filters?.limit) params.append('limit', filters.limit.toString())
-    
+
     const response = await api.get('/deployments', { params })
     return response.data
   },
@@ -322,7 +328,7 @@ export const apiClient = {
   getDeploymentLogs: async (deploymentId: number, limit: number = 100) => {
     const params = new URLSearchParams()
     params.append('limit', limit.toString())
-    
+
     const response = await api.get(`/deployments/${deploymentId}/logs`, { params })
     return response.data
   },
