@@ -53,6 +53,14 @@ export default function Navigation() {
               >
                 Dashboard
               </Link>
+              {user && (
+                <Link
+                  href="/settings"
+                  className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                >
+                  Settings
+                </Link>
+              )}
               {isAdmin && (
                 <Link
                   href="/admin"
