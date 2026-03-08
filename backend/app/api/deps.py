@@ -1,7 +1,8 @@
 from typing import Generator, Optional
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Security
 from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import APIKeyHeader
 from jose import JWTError, jwt
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
@@ -65,3 +66,13 @@ def get_current_superuser(
             detail="The user doesn't have enough privileges",
         )
     return current_user
+
+
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+def get_current_user_by_api_key(api_key: str = Security(api_key_header), db: Session = Depends(get_db)) -> User:
+    if not api_key:raise HTTPException(status_code=401, detail="API key is required")
+    user = db.query(User).filter(User.api_key == api_key).first()
+    if not user: raise HTTPException(status_code=401, detail="Invalid API key")
+    if not user.is_active: raise HTTPException(status_code=400, detail="Inactive user")
+    return user

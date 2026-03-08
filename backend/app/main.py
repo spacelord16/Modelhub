@@ -88,174 +88,7 @@ async def health_check():
     }
 
 
-# Debug endpoint to check database status
-@app.get("/debug/db")
-async def debug_db():
-    try:
-        from app.core.database import engine, SessionLocal
-        from app.models.user import User
-        from sqlalchemy import text
-
-        # Test basic connection
-        with engine.connect() as conn:
-            result = conn.execute(text("SELECT 1"))
-            db_connected = True
-
-        # Test tables exist
-        db = SessionLocal()
-        try:
-            user_count = db.query(User).count()
-            tables_exist = True
-        except Exception as table_error:
-            user_count = 0
-            tables_exist = False
-        finally:
-            db.close()
-
-        return {
-            "database_connected": db_connected,
-            "tables_exist": tables_exist,
-            "user_count": user_count,
-            "database_url": (
-                settings.SQLALCHEMY_DATABASE_URI[:50] + "..."
-                if settings.SQLALCHEMY_DATABASE_URI
-                else None
-            ),
-            "use_sqlite": settings.USE_SQLITE,
-        }
-    except Exception as e:
-        return {
-            "error": str(e),
-            "database_connected": False,
-            "tables_exist": False,
-        }
-
-
-# Manual database initialization endpoint
-@app.post("/debug/init-db")
-async def init_database():
-    try:
-        from app.core.database import engine, Base, SessionLocal
-        from app.models.user import User, UserRole
-        from app.models.model import Model, ModelVersion
-        from app.models.deployment import ModelDeployment, DeploymentLog
-        from app.models.analytics import PlatformAnalytics, UserActivity, ModelActivity
-        from app.core.security import get_password_hash
-        from sqlalchemy import text
-
-        # Import all models to ensure they're registered
-        print("Force importing all models...")
-
-        # Create all tables
-        print("Creating all tables...")
-        Base.metadata.create_all(bind=engine)
-
-        # Verify tables were created
-        with engine.connect() as conn:
-            result = conn.execute(
-                text(
-                    "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
-                )
-            )
-            tables = [row[0] for row in result]
-
-        # Create admin user
-        db = SessionLocal()
-        try:
-            admin_user = (
-                db.query(User).filter(User.email == "admin@example.com").first()
-            )
-            if not admin_user:
-                admin_user = User(
-                    email="admin@example.com",
-                    username="admin",
-                    full_name="Admin User",
-                    hashed_password=get_password_hash("admin"),
-                    is_superuser=True,
-                    is_active=True,
-                    role=UserRole.SUPER_ADMIN,
-                    login_count=0,
-                )
-                db.add(admin_user)
-                db.commit()
-                admin_created = True
-            else:
-                admin_created = False
-        except Exception as e:
-            db.rollback()
-            admin_created = f"Error: {e}"
-        finally:
-            db.close()
-
-        return {
-            "success": True,
-            "tables_created": tables,
-            "admin_user_created": admin_created,
-            "message": "Database initialized successfully",
-        }
-
-    except Exception as e:
-        return {
-            "success": False,
-            "error": str(e),
-            "message": "Database initialization failed",
-        }
-
-
-# Manual column addition endpoint
-@app.post("/debug/add-columns")
-async def add_missing_columns():
-    try:
-        from app.core.database import engine
-        from sqlalchemy import text
-
-        results = []
-
-        with engine.connect() as conn:
-            # Add missing columns to users table
-            try:
-                conn.execute(
-                    text("ALTER TABLE users ADD COLUMN role VARCHAR DEFAULT 'USER'")
-                )
-                conn.execute(text("ALTER TABLE users ADD COLUMN last_login TIMESTAMP"))
-                conn.execute(
-                    text("ALTER TABLE users ADD COLUMN login_count INTEGER DEFAULT 0")
-                )
-                conn.commit()
-                results.append("Added columns to users table")
-            except Exception as e:
-                results.append(f"Users table columns: {str(e)}")
-
-            # Add missing columns to models table
-            try:
-                conn.execute(
-                    text(
-                        "ALTER TABLE models ADD COLUMN status VARCHAR DEFAULT 'PENDING'"
-                    )
-                )
-                conn.execute(
-                    text(
-                        "ALTER TABLE models ADD COLUMN deployment_status VARCHAR DEFAULT 'INACTIVE'"
-                    )
-                )
-                conn.execute(text("ALTER TABLE models ADD COLUMN reviewed_by INTEGER"))
-                conn.execute(
-                    text("ALTER TABLE models ADD COLUMN reviewed_at TIMESTAMP")
-                )
-                conn.execute(text("ALTER TABLE models ADD COLUMN review_notes TEXT"))
-                conn.commit()
-                results.append("Added columns to models table")
-            except Exception as e:
-                results.append(f"Models table columns: {str(e)}")
-
-        return {
-            "success": True,
-            "results": results,
-            "message": "Column addition completed",
-        }
-
-    except Exception as e:
-        return {"success": False, "error": str(e), "message": "Column addition failed"}
+# (Debug endpoints removed — were security risk with no auth)
 
 
 # CORS test endpoint
@@ -304,15 +137,14 @@ async def startup_event():
         Base.metadata.create_all(bind=engine)
         print("✅ Database tables created successfully!")
 
-        # Verify tables were created
+        # Verify tables were created (SQLite-compatible check)
         with engine.connect() as conn:
-            result = conn.execute(
-                text(
-                    "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
-                )
-            )
+            if settings.USE_SQLITE:
+                result = conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
+            else:
+                result = conn.execute(text("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"))
             tables = [row[0] for row in result]
-            print(f"Created tables: {tables}")
+            print(f"Tables found: {tables}")
 
         # Create admin user if it doesn't exist
         db = Session(bind=engine)

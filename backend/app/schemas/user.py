@@ -25,6 +25,7 @@ class UserInDBBase(UserBase):
     created_at: datetime
     updated_at: Optional[datetime] = None
     is_superuser: bool = False
+    api_key: Optional[str] = None  # Never expose the full key in list views
 
     class Config:
         from_attributes = True
@@ -36,3 +37,5 @@ class User(UserInDBBase):
 
 class UserInDB(UserInDBBase):
     hashed_password: str
+
+

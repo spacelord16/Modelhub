@@ -46,8 +46,7 @@ def read_models(
     skip: int = 0,
     limit: int = 100,
     task_type: Optional[str] = None,
-    framework: Optional[str] = None,
-    current_user: User = Depends(get_current_active_user),
+    framework: Optional[str] = None
 ):
     """Get all models with optional filtering"""
     # For now, return all models - in production you might want to filter by visibility
@@ -178,8 +177,7 @@ def read_model_version(
 @router.get("/{model_id}", response_model=Model)
 def read_model(
     model_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
 ):
     """Get a specific model by ID"""
     db_model = get_model(db=db, model_id=model_id)

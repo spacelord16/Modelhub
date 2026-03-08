@@ -4,9 +4,13 @@ from typing import Any, Union, Optional
 from jose import jwt
 from passlib.context import CryptContext
 from app.core.config import settings
+import secrets
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+def generate_api_key() -> str:
+    # Generate a secure random API key
+    return f"mh_sk_{secrets.token_urlsafe(32)}"
 
 def create_access_token(
     subject: Union[str, Any], expires_delta: Optional[timedelta] = None
